@@ -1,0 +1,729 @@
+﻿<Window x:Class="WPFClient.Views.GameWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WPFClient.Views"
+        xmlns:converter="clr-namespace:WPFClient.Converters"
+          xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+          xmlns:command="http://www.galasoft.ch/mvvmlight"
+         xmlns:lb="clr-namespace:WPFClient.Behaviors"
+        
+
+        mc:Ignorable="d"
+        Height="550" Width="1000" Background="Aquamarine" ResizeMode="CanResize"
+             DataContext="{Binding Source={StaticResource Locator}, Path=GameVM}">
+
+
+
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Closing">
+            <command:EventToCommand  Command="{Binding WindowClosingCommand}"   PassEventArgsToCommand="True" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+
+    <Window.Resources>
+        <converter:GridFlipConverter x:Key="gridcv"/>
+        <converter:ChatWithUser x:Key="c2"/>
+        <converter:DiceConverter x:Key="DiceConverter"/>
+        <converter:EllipseConverter x:Key="ElliConverter"/>
+    </Window.Resources>
+    <Viewbox Stretch="Fill">
+        <Grid>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200"></ColumnDefinition>
+                <ColumnDefinition Width="800"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+
+
+
+
+
+            <Border Grid.Row="1" Height="525">
+                <Border.Background>
+                    <ImageBrush ImageSource="/Assets/backgroundforchat.png"></ImageBrush>
+                </Border.Background>
+
+                <ListBox ItemsSource="{Binding CurrentMessages}" Opacity="0.9"  Background="Transparent" Margin="0,52,0,104.8" lb:ListBoxBehavior.ScrollOnNewItem="true" ScrollViewer.HorizontalScrollBarVisibility="Disabled" >
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}">
+                            <Setter Property="Focusable" Value="False"/>
+                            <Setter Property="IsHitTestVisible" Value="False"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemTemplate >
+                        <DataTemplate>
+                            <Border CornerRadius="3" Opacity="1" BorderBrush="Black" BorderThickness="2" Background="Green" >
+                                <TextBlock Style="{StaticResource TextBlockStyle}" TextWrapping="Wrap" Opacity="1" FontSize="20"  Text="{Binding}"></TextBlock>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Border>
+            <TextBox Name="MyTextBox" Style="{StaticResource CustomTextBoxStyle}" Text="{Binding MessageToSend,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" Background="DarkOrange" Height="57" Width="195" HorizontalAlignment="Left" FontSize="20" TextWrapping="Wrap" VerticalAlignment="Bottom" Opacity="0.7" Margin="3,0,0,44.8" >
+                <TextBox.InputBindings>
+                    <KeyBinding Key="Return" Command="{Binding SendMessageCommand}" CommandParameter="{Binding ElementName=MyTextBox, Path=Text}" />
+                </TextBox.InputBindings>
+            </TextBox>
+            <Button Style="{StaticResource StandardButton}" Content="Send" Command="{Binding SendMessageCommand}"  Opacity="0.9" Height="41" Width="195" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,2,-0.2"  />
+
+            <Grid Grid.Column="1" RenderTransformOrigin="0.5,0.5" Height="420" VerticalAlignment="Top" >
+                <Grid.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform Angle="{Binding MyPlayer.IsBaseOnLeft, Converter={StaticResource gridcv}}"/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </Grid.RenderTransform>
+                <Grid.Background>
+                    <ImageBrush ImageSource="/Assets/myBoard.png"></ImageBrush>
+                </Grid.Background>
+
+
+
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="20"></ColumnDefinition>
+                    <ColumnDefinition Width="55*"></ColumnDefinition>
+                    <ColumnDefinition Width="55*"></ColumnDefinition>
+                    <ColumnDefinition Width="55*"></ColumnDefinition>
+                    <ColumnDefinition Width="55*"></ColumnDefinition>
+                    <ColumnDefinition Width="55*"></ColumnDefinition>
+                    <ColumnDefinition Width="55*"></ColumnDefinition>
+                    <ColumnDefinition Width="45"></ColumnDefinition>
+                    <ColumnDefinition Width="55*" ></ColumnDefinition>
+                    <ColumnDefinition Width="55*"></ColumnDefinition>
+                    <ColumnDefinition Width="55*"></ColumnDefinition>
+                    <ColumnDefinition Width="55*"></ColumnDefinition>
+                    <ColumnDefinition Width="55*"></ColumnDefinition>
+                    <ColumnDefinition Width="55*"></ColumnDefinition>
+                    <ColumnDefinition Width="20"></ColumnDefinition>
+                    <ColumnDefinition Width="69*"></ColumnDefinition>
+
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="15"></RowDefinition>
+                    <RowDefinition Height="225*"></RowDefinition>
+                    <RowDefinition Height="40"></RowDefinition>
+                    <RowDefinition Height="225*"></RowDefinition>
+                    <RowDefinition Height="20*"></RowDefinition>
+                </Grid.RowDefinitions>
+
+
+                <!--1-->
+                <ListBox Width="55" Height="175" Name="listbox" HorizontalAlignment="Center" BorderThickness="0"  Background="Transparent" Grid.Column="13" Grid.Row="1" ItemsSource="{Binding MyBoard.Cells[0],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}">
+                            <Setter Property="Focusable" Value="False"/>
+                            <Setter Property="IsHitTestVisible" Value="False"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel VerticalAlignment="Top" HorizontalAlignment="Center"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseDown">
+                            <i:InvokeCommandAction Command="{Binding SelectSpikeCommand}"
+                                           CommandParameter="{Binding MyBoard.Cells[0]}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </ListBox>
+                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"  Background="Transparent" Grid.Column="12" Grid.Row="1"  ItemsSource="{Binding MyBoard.Cells[1],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}">
+                            <Setter Property="Focusable" Value="False"/>
+                            <Setter Property="IsHitTestVisible" Value="False"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel VerticalAlignment="Top" HorizontalAlignment="Center"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseDown">
+                            <i:InvokeCommandAction Command="{Binding SelectSpikeCommand}"
+                                           CommandParameter="{Binding MyBoard.Cells[1]}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </ListBox>
+                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"  Background="Transparent" Grid.Column="11" Grid.Row="1"  ItemsSource="{Binding MyBoard.Cells[2],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}">
+                            <Setter Property="Focusable" Value="False"/>
+                            <Setter Property="IsHitTestVisible" Value="False"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel VerticalAlignment="Top" HorizontalAlignment="Center"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseDown">
+                            <i:InvokeCommandAction Command="{Binding SelectSpikeCommand}"
+                                           CommandParameter="{Binding MyBoard.Cells[2]}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </ListBox>
+                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"   Background="Transparent" Grid.Column="10" Grid.Row="1"  ItemsSource="{Binding MyBoard.Cells[3],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}">
+                            <Setter Property="Focusable" Value="False"/>
+                            <Setter Property="IsHitTestVisible" Value="False"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel VerticalAlignment="Top" HorizontalAlignment="Center"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseDown">
+                            <i:InvokeCommandAction Command="{Binding SelectSpikeCommand}"
+                                           CommandParameter="{Binding MyBoard.Cells[3]}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </ListBox>
+                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"   Background="Transparent" Grid.Column="9" Grid.Row="1" ItemsSource="{Binding MyBoard.Cells[4],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}">
+                            <Setter Property="Focusable" Value="False"/>
+                            <Setter Property="IsHitTestVisible" Value="False"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel VerticalAlignment="Top" HorizontalAlignment="Center"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseDown">
+                            <i:InvokeCommandAction Command="{Binding SelectSpikeCommand}"
+                                           CommandParameter="{Binding MyBoard.Cells[4]}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </ListBox>
+                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"   Background="Transparent" Grid.Column="8" Grid.Row="1" ItemsSource="{Binding MyBoard.Cells[5],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}">
+                            <Setter Property="Focusable" Value="False"/>
+                            <Setter Property="IsHitTestVisible" Value="False"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel VerticalAlignment="Top" HorizontalAlignment="Center"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseDown">
+                            <i:InvokeCommandAction Command="{Binding SelectSpikeCommand}"
+                                           CommandParameter="{Binding MyBoard.Cells[5]}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </ListBox>
+                <ListBox Width="40" Height="175" HorizontalAlignment="Center"  BorderThickness="0"  Background="Transparent" Grid.Column="7" Grid.Row="1"  VerticalAlignment="Bottom" ItemsSource="{Binding MyBoard.EatenRedCell,Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}">
+                            <Setter Property="Focusable" Value="False"/>
+                            <Setter Property="IsHitTestVisible" Value="False"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseDown">
+                            <i:InvokeCommandAction Command="{Binding SelectSpikeCommand}"
+                                           CommandParameter="{Binding MyBoard.EatenRedCell}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </ListBox>
+                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"   Background="Transparent" Grid.Column="6" Grid.Row="1" ItemsSource="{Binding MyBoard.Cells[6],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}">
+                            <Setter Property="Focusable" Value="False"/>
+                            <Setter Property="IsHitTestVisible" Value="False"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel VerticalAlignment="Top" HorizontalAlignment="Center"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseDown">
+                            <i:InvokeCommandAction Command="{Binding SelectSpikeCommand}"
+                                           CommandParameter="{Binding MyBoard.Cells[6]}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </ListBox>
+                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"  Background="Transparent" Grid.Column="5" Grid.Row="1" ItemsSource="{Binding MyBoard.Cells[7],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}">
+                            <Setter Property="Focusable" Value="False"/>
+                            <Setter Property="IsHitTestVisible" Value="False"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel VerticalAlignment="Top" HorizontalAlignment="Center"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseDown">
+                            <i:InvokeCommandAction Command="{Binding SelectSpikeCommand}"
+                                           CommandParameter="{Binding MyBoard.Cells[7]}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </ListBox>
+                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"  Background="Transparent" Grid.Column="4" Grid.Row="1" ItemsSource="{Binding MyBoard.Cells[8],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}">
+                            <Setter Property="Focusable" Value="False"/>
+                            <Setter Property="IsHitTestVisible" Value="False"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel VerticalAlignment="Top" HorizontalAlignment="Center"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseDown">
+                            <i:InvokeCommandAction Command="{Binding SelectSpikeCommand}"
+                                           CommandParameter="{Binding MyBoard.Cells[8]}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </ListBox>
+                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"  Background="Transparent" Grid.Column="3" Grid.Row="1"  ItemsSource="{Binding MyBoard.Cells[9],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}">
+                            <Setter Property="Focusable" Value="False"/>
+                            <Setter Property="IsHitTestVisible" Value="False"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel VerticalAlignment="Top" HorizontalAlignment="Center"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseDown">
+                            <i:InvokeCommandAction Command="{Binding SelectSpikeCommand}"
+                                           CommandParameter="{Binding MyBoard.Cells[9]}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </ListBox>
+                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"  Background="Transparent" Grid.Column="2" Grid.Row="1" ItemsSource="{Binding MyBoard.Cells[10],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}">
+                            <Setter Property="Focusable" Value="False"/>
+                            <Setter Property="IsHitTestVisible" Value="False"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel VerticalAlignment="Top" HorizontalAlignment="Center"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseDown">
+                            <i:InvokeCommandAction Command="{Binding SelectSpikeCommand}"
+                                           CommandParameter="{Binding MyBoard.Cells[10]}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </ListBox>
+                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"  Background="Transparent" Grid.Column="1" Grid.Row="1" ItemsSource="{Binding MyBoard.Cells[11],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}" >
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}">
+                            <Setter Property="Focusable" Value="False"/>
+                            <Setter Property="IsHitTestVisible" Value="False"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel VerticalAlignment="Top" HorizontalAlignment="Center"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseDown">
+                            <i:InvokeCommandAction Command="{Binding SelectSpikeCommand}"
+                                           CommandParameter="{Binding MyBoard.Cells[11]}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </ListBox>
+                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"   Background="Transparent" Grid.Column="1" Grid.Row="3"  VerticalAlignment="Bottom" ItemsSource="{Binding MyBoard.Cells[12],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}">
+                            <Setter Property="Focusable" Value="False"/>
+                            <Setter Property="IsHitTestVisible" Value="False"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseDown">
+                            <i:InvokeCommandAction Command="{Binding SelectSpikeCommand}"
+                                           CommandParameter="{Binding MyBoard.Cells[12]}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </ListBox>
+                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"  Background="Transparent" Grid.Column="2" Grid.Row="3"  VerticalAlignment="Bottom" ItemsSource="{Binding MyBoard.Cells[13],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}">
+                            <Setter Property="Focusable" Value="False"/>
+                            <Setter Property="IsHitTestVisible" Value="False"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseDown">
+                            <i:InvokeCommandAction Command="{Binding SelectSpikeCommand}"
+                                           CommandParameter="{Binding MyBoard.Cells[13]}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </ListBox>
+                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"   Background="Transparent" Grid.Column="3" Grid.Row="3"  VerticalAlignment="Bottom" ItemsSource="{Binding MyBoard.Cells[14],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}">
+                            <Setter Property="Focusable" Value="False"/>
+                            <Setter Property="IsHitTestVisible" Value="False"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseDown">
+                            <i:InvokeCommandAction Command="{Binding SelectSpikeCommand}"
+                                           CommandParameter="{Binding MyBoard.Cells[14]}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </ListBox>
+                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"   Background="Transparent" Grid.Column="4" Grid.Row="3" VerticalAlignment="Bottom"  ItemsSource="{Binding MyBoard.Cells[15],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}">
+                            <Setter Property="Focusable" Value="False"/>
+                            <Setter Property="IsHitTestVisible" Value="False"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseDown">
+                            <i:InvokeCommandAction Command="{Binding SelectSpikeCommand}"
+                                           CommandParameter="{Binding MyBoard.Cells[15]}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </ListBox>
+                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"  Background="Transparent" Grid.Column="5" Grid.Row="3" VerticalAlignment="Bottom"  ItemsSource="{Binding MyBoard.Cells[16],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}">
+                            <Setter Property="Focusable" Value="False"/>
+                            <Setter Property="IsHitTestVisible" Value="False"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseDown">
+                            <i:InvokeCommandAction Command="{Binding SelectSpikeCommand}"
+                                           CommandParameter="{Binding MyBoard.Cells[16]}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </ListBox>
+                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"  Background="Transparent" Grid.Column="6" Grid.Row="3"  VerticalAlignment="Bottom" ItemsSource="{Binding MyBoard.Cells[17],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}">
+                            <Setter Property="Focusable" Value="False"/>
+                            <Setter Property="IsHitTestVisible" Value="False"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseDown">
+                            <i:InvokeCommandAction Command="{Binding SelectSpikeCommand}"
+                                           CommandParameter="{Binding MyBoard.Cells[17]}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </ListBox>
+                <ListBox Width="40" Height="175" HorizontalAlignment="Center"  BorderThickness="0"  Background="Transparent" Grid.Column="7" Grid.Row="3"  VerticalAlignment="Bottom" ItemsSource="{Binding MyBoard.EatenWhiteCell,Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}">
+                            <Setter Property="Focusable" Value="False"/>
+                            <Setter Property="IsHitTestVisible" Value="False"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseDown">
+                            <i:InvokeCommandAction Command="{Binding SelectSpikeCommand}"
+                                           CommandParameter="{Binding MyBoard.EatenWhiteCell}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </ListBox>
+                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"   Background="Transparent" Grid.Column="8" Grid.Row="3"  VerticalAlignment="Bottom" ItemsSource="{Binding MyBoard.Cells[18],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}">
+                            <Setter Property="Focusable" Value="False"/>
+                            <Setter Property="IsHitTestVisible" Value="False"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseDown">
+                            <i:InvokeCommandAction Command="{Binding SelectSpikeCommand}"
+                                           CommandParameter="{Binding MyBoard.Cells[18]}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </ListBox>
+                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"   Background="Transparent" Grid.Column="9" Grid.Row="3" VerticalAlignment="Bottom"  ItemsSource="{Binding MyBoard.Cells[19],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}">
+                            <Setter Property="Focusable" Value="False"/>
+                            <Setter Property="IsHitTestVisible" Value="False"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseDown">
+                            <i:InvokeCommandAction Command="{Binding SelectSpikeCommand}"
+                                           CommandParameter="{Binding MyBoard.Cells[19]}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </ListBox>
+                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"  Background="Transparent" Grid.Column="10" Grid.Row="3" VerticalAlignment="Bottom"  ItemsSource="{Binding MyBoard.Cells[20],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}">
+                            <Setter Property="Focusable" Value="False"/>
+                            <Setter Property="IsHitTestVisible" Value="False"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseDown">
+                            <i:InvokeCommandAction Command="{Binding SelectSpikeCommand}"
+                                           CommandParameter="{Binding MyBoard.Cells[20]}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </ListBox>
+                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"  Background="Transparent" Grid.Column="11" Grid.Row="3" VerticalAlignment="Bottom"  ItemsSource="{Binding MyBoard.Cells[21],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}">
+                            <Setter Property="Focusable" Value="False"/>
+                            <Setter Property="IsHitTestVisible" Value="False"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseDown">
+                            <i:InvokeCommandAction Command="{Binding SelectSpikeCommand}"
+                                           CommandParameter="{Binding MyBoard.Cells[21]}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </ListBox>
+                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"   Background="Transparent" Grid.Column="11" Grid.Row="3" VerticalAlignment="Top" ItemsSource="{Binding MyBoard.Cells[22],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}" Grid.ColumnSpan="2" Margin="55,0.4,0.4,0" Grid.RowSpan="2">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}">
+                            <Setter Property="Focusable" Value="False"/>
+                            <Setter Property="IsHitTestVisible" Value="False"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseDown">
+                            <i:InvokeCommandAction Command="{Binding SelectSpikeCommand}"
+                                           CommandParameter="{Binding MyBoard.Cells[22]}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </ListBox>
+                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"   Background="Transparent" Grid.Column="13" Grid.Row="3" VerticalAlignment="Bottom"  ItemsSource="{Binding MyBoard.Cells[23],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}">
+                            <Setter Property="Focusable" Value="False"/>
+                            <Setter Property="IsHitTestVisible" Value="False"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseDown">
+                            <i:InvokeCommandAction Command="{Binding SelectSpikeCommand}"
+                                           CommandParameter="{Binding MyBoard.Cells[23]}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+
+                </ListBox>
+
+                <ListBox Width="45" Height="187" HorizontalAlignment="Center"  BorderThickness="0"   Background="Transparent" Grid.Column="15" Grid.Row="2" VerticalAlignment="Bottom"  ItemsSource="{Binding MyBoard.WhitePile,Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}" Margin="6,0,17,12" Grid.RowSpan="3">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}">
+                            <Setter Property="Focusable" Value="False"/>
+                            <Setter Property="IsHitTestVisible" Value="False"/>
+                            <Setter Property="Padding" Value="0"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseDown">
+                            <i:InvokeCommandAction Command="{Binding SelectSpikeCommand}"
+                                           CommandParameter="{Binding MyBoard.WhitePile}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </ListBox>
+
+                <ListBox Width="43" Height="183" HorizontalAlignment="Center"  BorderThickness="0"   Background="Transparent" Grid.Column="15" VerticalAlignment="Bottom"  ItemsSource="{Binding MyBoard.RedPile,Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}" Margin="6,0,19,33.6" Grid.RowSpan="3">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}">
+                            <Setter Property="Focusable" Value="False"/>
+                            <Setter Property="IsHitTestVisible" Value="False"/>
+                            <Setter Property="Padding" Value="0"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel VerticalAlignment="Top" HorizontalAlignment="Center"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseDown">
+                            <i:InvokeCommandAction Command="{Binding SelectSpikeCommand}"
+                                           CommandParameter="{Binding MyBoard.RedPile}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </ListBox>
+
+
+
+
+
+
+
+
+
+
+
+                <!--1-->
+
+                <Image Source="{Binding MyBoard.Dices.Cube1,Converter={StaticResource DiceConverter}}" Opacity="{Binding MyBoard.Dices.IsCube1Used,Converter={StaticResource DiceConverter}}" Grid.Column="9" Grid.Row="2"   RenderTransformOrigin="0.5,0.5">
+                    <Image.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform/>
+                            <SkewTransform/>
+                            <RotateTransform Angle="{Binding  MyPlayer.IsBaseOnLeft,Converter={StaticResource gridcv}}"/>
+                            <TranslateTransform/>
+                        </TransformGroup>
+                    </Image.RenderTransform>
+                </Image>
+                <Image Source="{Binding MyBoard.Dices.Cube2,Converter={StaticResource DiceConverter}}" Opacity="{Binding MyBoard.Dices.IsCube2Used,Converter={StaticResource DiceConverter}}"   Grid.Column="5" Grid.Row="2"  RenderTransformOrigin="0.5,0.5">
+                    <Image.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform/>
+                            <SkewTransform/>
+                            <RotateTransform Angle="{Binding  MyPlayer.IsBaseOnLeft,Converter={StaticResource gridcv}}"/>
+                            <TranslateTransform/>
+                        </TransformGroup>
+                    </Image.RenderTransform>
+                </Image>
+
+
+
+                <Button  Command="{Binding RollDicesCommand}" Grid.Column="6" Grid.Row="2" Grid.ColumnSpan="3" Style="{StaticResource StandardButton}"  Content="ROLL DICES"  FontWeight="Bold" FontSize="14" FontFamily="cooper black" RenderTransformOrigin="0.5,0.5">
+                    <Button.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform/>
+                            <SkewTransform/>
+                            <RotateTransform Angle="{Binding MyPlayer.IsBaseOnLeft,Converter={StaticResource gridcv}}"/>
+                            <TranslateTransform/>
+                        </TransformGroup>
+                    </Button.RenderTransform>
+                    <Button.Background>
+                        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                            <GradientStop Color="Black" Offset="0"/>
+                            <GradientStop Color="#FF22FC83" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Button.Background>
+                </Button>
+            </Grid>
+
+            <Border  CornerRadius="3" Opacity="0.8" BorderBrush="Black" BorderThickness="2" Background="LightGoldenrodYellow" VerticalAlignment="Bottom" Grid.Column="1"  Height="105"  >
+                <TextBlock Style="{StaticResource TextBlockStyle}" Opacity="1" Text="{Binding Message}" FontSize="25" TextAlignment="Center" TextWrapping="Wrap" VerticalAlignment="Center"  >
+                </TextBlock>
+            </Border>
+
+
+
+            <Border  CornerRadius="3" Opacity="0.7" BorderBrush="Black" BorderThickness="2" Background="DarkOrange" VerticalAlignment="Top"  Height="52"  >
+                <TextBlock Style="{StaticResource TextBlockStyle}" Opacity="1" Text="{Binding SelectedUser,Converter={StaticResource c2}}" FontSize="25" TextAlignment="Center" TextWrapping="Wrap" VerticalAlignment="Center"  >
+                </TextBlock>
+            </Border>
+
+
+
+
+
+
+
+
+
+        </Grid>
+    </Viewbox>
+</Window>

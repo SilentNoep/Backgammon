@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2026
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalRChat", "SignalRChat\SignalRChat.csproj", "{5E35FE6D-2AF0-4F7D-80E4-7187F7E40D37}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WPFClient", "WPFClient\WPFClient.csproj", "{A6B34414-8E28-4289-9D6F-66E3B332DC26}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "Common\Common.csproj", "{110B0E72-4BDA-4759-A6C5-8ACBF586DF26}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5E35FE6D-2AF0-4F7D-80E4-7187F7E40D37}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5E35FE6D-2AF0-4F7D-80E4-7187F7E40D37}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5E35FE6D-2AF0-4F7D-80E4-7187F7E40D37}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5E35FE6D-2AF0-4F7D-80E4-7187F7E40D37}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A6B34414-8E28-4289-9D6F-66E3B332DC26}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A6B34414-8E28-4289-9D6F-66E3B332DC26}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A6B34414-8E28-4289-9D6F-66E3B332DC26}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A6B34414-8E28-4289-9D6F-66E3B332DC26}.Release|Any CPU.Build.0 = Release|Any CPU
+		{110B0E72-4BDA-4759-A6C5-8ACBF586DF26}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{110B0E72-4BDA-4759-A6C5-8ACBF586DF26}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{110B0E72-4BDA-4759-A6C5-8ACBF586DF26}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{110B0E72-4BDA-4759-A6C5-8ACBF586DF26}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5CA0FB8C-9905-46E4-BDAE-285598C5C7AF}
+	EndGlobalSection
+EndGlobal
