@@ -23,6 +23,48 @@
     </i:Interaction.Triggers>
 
     <Window.Resources>
+
+
+        <Style x:Key="ListBoxBaseStyle" TargetType="ListBox">
+            <Setter Property="Height" Value="175"/>
+            <Setter Property="Width" Value="55"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="SelectedValue" Value="{Binding SelectedCell}"/>
+        </Style>
+        <Style x:Key="ListBoxStyleForTop" BasedOn="{StaticResource ListBoxBaseStyle}" TargetType="ListBox">
+            <Setter Property="Height" Value="175"/>
+            <Setter Property="Width" Value="55"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="Grid.Row" Value="1"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="SelectedValue" Value="{Binding SelectedCell}"/>
+        </Style>
+        <Style x:Key="ListBoxStyleForBottom" BasedOn="{StaticResource ListBoxBaseStyle}" TargetType="ListBox">
+            <Setter Property="Height" Value="175"/>
+            <Setter Property="Width" Value="55"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="VerticalAlignment" Value="Bottom"/>
+            <Setter Property="Grid.Row" Value="3"/>
+            <Setter Property="SelectedValue" Value="{Binding SelectedCell}"/>
+        </Style>
+        <Style x:Key="ListBoxItemStyle" TargetType="{x:Type ListBoxItem}">
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="IsHitTestVisible" Value="False"/>
+        </Style>
+
+
+
+
+
+
+
+
+
         <converter:GridFlipConverter x:Key="gridcv"/>
         <converter:ChatWithUser x:Key="c2"/>
         <converter:DiceConverter x:Key="DiceConverter"/>
@@ -35,11 +77,6 @@
                 <ColumnDefinition Width="200"></ColumnDefinition>
                 <ColumnDefinition Width="800"></ColumnDefinition>
             </Grid.ColumnDefinitions>
-
-
-
-
-
             <Border Grid.Row="1" Height="525">
                 <Border.Background>
                     <ImageBrush ImageSource="/Assets/backgroundforchat.png"></ImageBrush>
@@ -113,7 +150,7 @@
 
 
                 <!--1-->
-                <ListBox Width="55" Height="175" Name="listbox" HorizontalAlignment="Center" BorderThickness="0"  Background="Transparent" Grid.Column="13" Grid.Row="1" ItemsSource="{Binding MyBoard.Cells[0],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                <ListBox Style="{StaticResource ListBoxStyleForTop}" Grid.Column="13" ItemsSource="{Binding MyBoard.Cells[0],Converter={StaticResource ElliConverter}}">
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="{x:Type ListBoxItem}">
                             <Setter Property="Focusable" Value="False"/>
@@ -132,7 +169,7 @@
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                 </ListBox>
-                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"  Background="Transparent" Grid.Column="12" Grid.Row="1"  ItemsSource="{Binding MyBoard.Cells[1],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                <ListBox Style="{StaticResource ListBoxStyleForTop}" Grid.Column="12"   ItemsSource="{Binding MyBoard.Cells[1],Converter={StaticResource ElliConverter}}">
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="{x:Type ListBoxItem}">
                             <Setter Property="Focusable" Value="False"/>
@@ -151,7 +188,7 @@
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                 </ListBox>
-                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"  Background="Transparent" Grid.Column="11" Grid.Row="1"  ItemsSource="{Binding MyBoard.Cells[2],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                <ListBox Style="{StaticResource ListBoxStyleForTop}" Grid.Column="11" ItemsSource="{Binding MyBoard.Cells[2],Converter={StaticResource ElliConverter}}">
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="{x:Type ListBoxItem}">
                             <Setter Property="Focusable" Value="False"/>
@@ -170,7 +207,7 @@
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                 </ListBox>
-                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"   Background="Transparent" Grid.Column="10" Grid.Row="1"  ItemsSource="{Binding MyBoard.Cells[3],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                <ListBox Style="{StaticResource ListBoxStyleForTop}" Grid.Column="10" ItemsSource="{Binding MyBoard.Cells[3],Converter={StaticResource ElliConverter}}">
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="{x:Type ListBoxItem}">
                             <Setter Property="Focusable" Value="False"/>
@@ -189,7 +226,7 @@
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                 </ListBox>
-                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"   Background="Transparent" Grid.Column="9" Grid.Row="1" ItemsSource="{Binding MyBoard.Cells[4],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                <ListBox Style="{StaticResource ListBoxStyleForTop}" Grid.Column="9" ItemsSource="{Binding MyBoard.Cells[4],Converter={StaticResource ElliConverter}}">
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="{x:Type ListBoxItem}">
                             <Setter Property="Focusable" Value="False"/>
@@ -208,7 +245,7 @@
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                 </ListBox>
-                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"   Background="Transparent" Grid.Column="8" Grid.Row="1" ItemsSource="{Binding MyBoard.Cells[5],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                <ListBox Style="{StaticResource ListBoxStyleForTop}" Grid.Column="8" ItemsSource="{Binding MyBoard.Cells[5],Converter={StaticResource ElliConverter}}">
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="{x:Type ListBoxItem}">
                             <Setter Property="Focusable" Value="False"/>
@@ -246,7 +283,7 @@
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                 </ListBox>
-                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"   Background="Transparent" Grid.Column="6" Grid.Row="1" ItemsSource="{Binding MyBoard.Cells[6],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                <ListBox Style="{StaticResource ListBoxStyleForTop}" Grid.Column="6" ItemsSource="{Binding MyBoard.Cells[6],Converter={StaticResource ElliConverter}}">
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="{x:Type ListBoxItem}">
                             <Setter Property="Focusable" Value="False"/>
@@ -265,7 +302,7 @@
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                 </ListBox>
-                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"  Background="Transparent" Grid.Column="5" Grid.Row="1" ItemsSource="{Binding MyBoard.Cells[7],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                <ListBox Style="{StaticResource ListBoxStyleForTop}" Grid.Column="5" ItemsSource="{Binding MyBoard.Cells[7],Converter={StaticResource ElliConverter}}">
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="{x:Type ListBoxItem}">
                             <Setter Property="Focusable" Value="False"/>
@@ -284,7 +321,7 @@
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                 </ListBox>
-                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"  Background="Transparent" Grid.Column="4" Grid.Row="1" ItemsSource="{Binding MyBoard.Cells[8],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                <ListBox Style="{StaticResource ListBoxStyleForTop}" Grid.Column="4" ItemsSource="{Binding MyBoard.Cells[8],Converter={StaticResource ElliConverter}}">
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="{x:Type ListBoxItem}">
                             <Setter Property="Focusable" Value="False"/>
@@ -303,7 +340,7 @@
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                 </ListBox>
-                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"  Background="Transparent" Grid.Column="3" Grid.Row="1"  ItemsSource="{Binding MyBoard.Cells[9],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                <ListBox Style="{StaticResource ListBoxStyleForTop}" Grid.Column="3" ItemsSource="{Binding MyBoard.Cells[9],Converter={StaticResource ElliConverter}}">
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="{x:Type ListBoxItem}">
                             <Setter Property="Focusable" Value="False"/>
@@ -322,7 +359,7 @@
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                 </ListBox>
-                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"  Background="Transparent" Grid.Column="2" Grid.Row="1" ItemsSource="{Binding MyBoard.Cells[10],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                <ListBox Style="{StaticResource ListBoxStyleForTop}" Grid.Column="2" ItemsSource="{Binding MyBoard.Cells[10],Converter={StaticResource ElliConverter}}">
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="{x:Type ListBoxItem}">
                             <Setter Property="Focusable" Value="False"/>
@@ -341,7 +378,7 @@
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                 </ListBox>
-                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"  Background="Transparent" Grid.Column="1" Grid.Row="1" ItemsSource="{Binding MyBoard.Cells[11],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}" >
+                <ListBox Style="{StaticResource ListBoxStyleForTop}" Grid.Column="1" ItemsSource="{Binding MyBoard.Cells[11],Converter={StaticResource ElliConverter}}">
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="{x:Type ListBoxItem}">
                             <Setter Property="Focusable" Value="False"/>
@@ -360,7 +397,7 @@
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                 </ListBox>
-                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"   Background="Transparent" Grid.Column="1" Grid.Row="3"  VerticalAlignment="Bottom" ItemsSource="{Binding MyBoard.Cells[12],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                <ListBox Style="{StaticResource ListBoxStyleForBottom}" Grid.Column="1" ItemsSource="{Binding MyBoard.Cells[12],Converter={StaticResource ElliConverter}}">
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="{x:Type ListBoxItem}">
                             <Setter Property="Focusable" Value="False"/>
@@ -379,7 +416,7 @@
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                 </ListBox>
-                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"  Background="Transparent" Grid.Column="2" Grid.Row="3"  VerticalAlignment="Bottom" ItemsSource="{Binding MyBoard.Cells[13],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                <ListBox Style="{StaticResource ListBoxStyleForBottom}" Grid.Column="2" ItemsSource="{Binding MyBoard.Cells[13],Converter={StaticResource ElliConverter}}">
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="{x:Type ListBoxItem}">
                             <Setter Property="Focusable" Value="False"/>
@@ -398,7 +435,7 @@
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                 </ListBox>
-                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"   Background="Transparent" Grid.Column="3" Grid.Row="3"  VerticalAlignment="Bottom" ItemsSource="{Binding MyBoard.Cells[14],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                <ListBox Style="{StaticResource ListBoxStyleForBottom}" Grid.Column="3" ItemsSource="{Binding MyBoard.Cells[14],Converter={StaticResource ElliConverter}}">
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="{x:Type ListBoxItem}">
                             <Setter Property="Focusable" Value="False"/>
@@ -417,7 +454,7 @@
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                 </ListBox>
-                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"   Background="Transparent" Grid.Column="4" Grid.Row="3" VerticalAlignment="Bottom"  ItemsSource="{Binding MyBoard.Cells[15],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                <ListBox Style="{StaticResource ListBoxStyleForBottom}" Grid.Column="4" ItemsSource="{Binding MyBoard.Cells[15],Converter={StaticResource ElliConverter}}">
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="{x:Type ListBoxItem}">
                             <Setter Property="Focusable" Value="False"/>
@@ -436,7 +473,7 @@
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                 </ListBox>
-                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"  Background="Transparent" Grid.Column="5" Grid.Row="3" VerticalAlignment="Bottom"  ItemsSource="{Binding MyBoard.Cells[16],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                <ListBox Style="{StaticResource ListBoxStyleForBottom}" Grid.Column="5" ItemsSource="{Binding MyBoard.Cells[16],Converter={StaticResource ElliConverter}}">
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="{x:Type ListBoxItem}">
                             <Setter Property="Focusable" Value="False"/>
@@ -455,7 +492,7 @@
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                 </ListBox>
-                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"  Background="Transparent" Grid.Column="6" Grid.Row="3"  VerticalAlignment="Bottom" ItemsSource="{Binding MyBoard.Cells[17],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                <ListBox Style="{StaticResource ListBoxStyleForBottom}" Grid.Column="6" ItemsSource="{Binding MyBoard.Cells[17],Converter={StaticResource ElliConverter}}">
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="{x:Type ListBoxItem}">
                             <Setter Property="Focusable" Value="False"/>
@@ -493,7 +530,7 @@
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                 </ListBox>
-                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"   Background="Transparent" Grid.Column="8" Grid.Row="3"  VerticalAlignment="Bottom" ItemsSource="{Binding MyBoard.Cells[18],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                <ListBox Style="{StaticResource ListBoxStyleForBottom}" Grid.Column="8" ItemsSource="{Binding MyBoard.Cells[18],Converter={StaticResource ElliConverter}}">
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="{x:Type ListBoxItem}">
                             <Setter Property="Focusable" Value="False"/>
@@ -512,7 +549,7 @@
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                 </ListBox>
-                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"   Background="Transparent" Grid.Column="9" Grid.Row="3" VerticalAlignment="Bottom"  ItemsSource="{Binding MyBoard.Cells[19],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                <ListBox Style="{StaticResource ListBoxStyleForBottom}" Grid.Column="9" ItemsSource="{Binding MyBoard.Cells[19],Converter={StaticResource ElliConverter}}">
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="{x:Type ListBoxItem}">
                             <Setter Property="Focusable" Value="False"/>
@@ -531,7 +568,7 @@
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                 </ListBox>
-                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"  Background="Transparent" Grid.Column="10" Grid.Row="3" VerticalAlignment="Bottom"  ItemsSource="{Binding MyBoard.Cells[20],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                <ListBox Style="{StaticResource ListBoxStyleForBottom}" Grid.Column="10" ItemsSource="{Binding MyBoard.Cells[20],Converter={StaticResource ElliConverter}}">
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="{x:Type ListBoxItem}">
                             <Setter Property="Focusable" Value="False"/>
@@ -550,7 +587,7 @@
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                 </ListBox>
-                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"  Background="Transparent" Grid.Column="11" Grid.Row="3" VerticalAlignment="Bottom"  ItemsSource="{Binding MyBoard.Cells[21],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                <ListBox Style="{StaticResource ListBoxStyleForBottom}" Grid.Column="11" ItemsSource="{Binding MyBoard.Cells[21],Converter={StaticResource ElliConverter}}">
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="{x:Type ListBoxItem}">
                             <Setter Property="Focusable" Value="False"/>
@@ -569,7 +606,7 @@
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                 </ListBox>
-                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"   Background="Transparent" Grid.Column="11" Grid.Row="3" VerticalAlignment="Top" ItemsSource="{Binding MyBoard.Cells[22],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}" Grid.ColumnSpan="2" Margin="55,0.4,0.4,0" Grid.RowSpan="2">
+                <ListBox Style="{StaticResource ListBoxStyleForBottom}" Grid.Column="12" ItemsSource="{Binding MyBoard.Cells[22],Converter={StaticResource ElliConverter}}" >
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="{x:Type ListBoxItem}">
                             <Setter Property="Focusable" Value="False"/>
@@ -588,7 +625,7 @@
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                 </ListBox>
-                <ListBox Width="55" Height="175" HorizontalAlignment="Center"  BorderThickness="0"   Background="Transparent" Grid.Column="13" Grid.Row="3" VerticalAlignment="Bottom"  ItemsSource="{Binding MyBoard.Cells[23],Converter={StaticResource ElliConverter}}" SelectedValue="{Binding SelectedCell}">
+                <ListBox Style="{StaticResource ListBoxStyleForBottom}" Grid.Column="13" ItemsSource="{Binding MyBoard.Cells[23],Converter={StaticResource ElliConverter}}">
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="{x:Type ListBoxItem}">
                             <Setter Property="Focusable" Value="False"/>
@@ -718,6 +755,8 @@
 
 
 
+            <MediaElement Name="RollDice" Visibility="Collapsed" Source="Assets/RollDice.mp3" LoadedBehavior="Manual"  UnloadedBehavior="Stop"></MediaElement>
+            <MediaElement Name="MoveChip" Visibility="Collapsed" Source="Assets/MoveChip.mp3" LoadedBehavior="Manual"  UnloadedBehavior="Stop"></MediaElement>
 
 
 

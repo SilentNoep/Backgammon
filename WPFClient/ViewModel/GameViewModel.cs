@@ -33,6 +33,8 @@ namespace WPFClient.ViewModel
         #endregion
 
         #region Properties
+        public event EventHandler PlayRollDice;
+        public event EventHandler PlayMoveChip;
         public string Name { get; set; } = "Game";
         public Board MyBoard
         {
@@ -108,6 +110,7 @@ namespace WPFClient.ViewModel
 
         public GameViewModel(IChatService chatService, IDialogService messageService, IServerService serverService, GalaSoft.MvvmLight.Views.INavigationService navigationService)
         {
+
             bg = new BackgammonManager();
             MyPlayer = new Player();
             CurrentMessages = new ObservableCollection<string>();
@@ -139,7 +142,6 @@ namespace WPFClient.ViewModel
                     }
                 }
             });
-
 
             SendMessageCommand = new RelayCommand(() =>
             {
@@ -405,8 +407,7 @@ namespace WPFClient.ViewModel
         private void GetDices(Board board, bool isMyTurn)
         {
             MyBoard = board;
-
-
+            PlayRollDice(this, EventArgs.Empty);
             if (MyPlayer.IsMyTurn && !isMyTurn || (!MyPlayer.IsMyTurn && isMyTurn))
             {
                 if (MyPlayer.IsMyTurn && !isMyTurn)
@@ -472,7 +473,7 @@ namespace WPFClient.ViewModel
                 {
                     MyPlayer.IsMyTurn = isMyTurn;
                     IsMyTurn = isMyTurn;
-
+                    PlayMoveChip(this, EventArgs.Empty);
 
                     if (numberTurn == 0)
                     {

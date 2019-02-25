@@ -16,8 +16,6 @@ namespace WPFClient.Converters
 {
     public class EllipseConverter : IValueConverter
     {
-
-
         private ImageBrush RedEllipse;
         private ImageBrush WhiteEllipse;
 
@@ -25,8 +23,8 @@ namespace WPFClient.Converters
         {
             RedEllipse = new ImageBrush();
             WhiteEllipse = new ImageBrush();
-            RedEllipse.ImageSource = new BitmapImage(new Uri(@"Assets\redchip.jpg"));
-            WhiteEllipse.ImageSource = new BitmapImage(new Uri(@"\Assets\whitechip.jpg"));
+            RedEllipse.ImageSource = new BitmapImage(new Uri("pack://application:,,,/Assets/redchip.jpg"));
+            WhiteEllipse.ImageSource = new BitmapImage(new Uri("pack://application:,,,/Assets/whitechip.jpg"));
         }
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -50,9 +48,6 @@ namespace WPFClient.Converters
                     e.Width = 25;
                     e.StrokeThickness = 3;
                 }
-                   
-              
-              
                 if (Cell.ColorOfCell == Color.Red)
                 {
                     e.Fill = RedEllipse;
@@ -69,7 +64,6 @@ namespace WPFClient.Converters
                                 e.Stroke = ColorStroke;
                         }
                     }
-
                 }
                 else
                 {

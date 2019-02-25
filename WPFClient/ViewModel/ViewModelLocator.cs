@@ -31,9 +31,9 @@ namespace WPFClient.ViewModel
             SimpleIoc.Default.Register<IChatService, ChatService>();
             SimpleIoc.Default.Register<IDialogService, DialogService>();
             SimpleIoc.Default.Register<IServerService, ServerService>();
-
             var navService = new Services.NavigationService();
             SimpleIoc.Default.Register<GalaSoft.MvvmLight.Views.INavigationService>(() => navService);
+
 
 
 

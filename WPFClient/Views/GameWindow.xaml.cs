@@ -26,6 +26,16 @@ namespace WPFClient.Views
             InitializeComponent();
             var inst = (GameViewModel)this.DataContext;
             inst.SelectedUser = selectedUser;
+            inst.PlayRollDice += (sender, e) =>
+            {
+                RollDice.Position = TimeSpan.Zero;
+                RollDice.Play();
+            };
+            inst.PlayMoveChip += (sender, e) =>
+            {
+                MoveChip.Position = TimeSpan.Zero;
+                MoveChip.Play();
+            };
         }
 
     }

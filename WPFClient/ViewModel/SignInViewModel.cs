@@ -89,7 +89,9 @@ namespace WPFClient.ViewModel
                 User = new User() { UserName = this.UserName, Password = this.Password };
                 UserName = "";
                 Password = "";
-                if (_serverService.ConnectToServerSignIn("checkUserValidation", User))
+
+                string message = _serverService.ConnectToServerSignIn("checkUserValidation", User);
+                if (message == "")
                 {
                     _messageService.ShowMessage("You Successfully Logged In!", "GREAT!");
                     _chatService.GetUser(User);
@@ -98,10 +100,10 @@ namespace WPFClient.ViewModel
                         currentPage = new LobbyViewModel(_chatService, _messageService, _serverService, _navigationService)
                     });
                 }
-                else
-                {
+                else if(message == "Wrong")
                     _messageService.ShowError("UserName Or Password Does not Match!", "Please Try Again!");
-                }
+                else
+                    _messageService.ShowError($"{message}","Please Try Again");
             });
             GoToRegisterView = new RelayCommand(() =>
             {

@@ -32,42 +32,51 @@ namespace WPFClient.Services
             {
                 var content = new StringContent(JsonConvert.SerializeObject(user), Encoding.UTF8, "application/json");
                 var result = client.PostAsync($"{BaseUri}/offlineUser", content).Result;
-                if (result.IsSuccessStatusCode == true)
-                {
-                    var a = result.Content.ReadAsStringAsync().Result;
-                }
             }
         }
+
         public bool ConnectToServerRegister(string Uri, User user)
         {
             using (var client = new HttpClient())
             {
                 Uri BaseUri = new Uri("http://localhost:52527/api/user");
                 var content = new StringContent(JsonConvert.SerializeObject(user), Encoding.UTF8, "application/json");
-                var result = client.PostAsync($"{BaseUri}/register", content).Result;
-                if (result.IsSuccessStatusCode == true)
+                try
                 {
-                    var a = result.Content.ReadAsStringAsync().Result;
-                    return true;
+                    var result = client.PostAsync($"{BaseUri}/register", content).Result;
+                    if (result.IsSuccessStatusCode == true)
+                        return true;
+                    else
+                        return false;
                 }
-                return false;
+                catch
+                {
+                    return false;
+                }
             }
         }
-        public bool ConnectToServerSignIn(string Uri, User user)
+
+        public string ConnectToServerSignIn(string Uri, User user)
         {
             using (var client = new HttpClient())
             {
                 Uri BaseUri = new Uri("http://localhost:52527/api/user");
                 var content = new StringContent(JsonConvert.SerializeObject(user), Encoding.UTF8, "application/json");
-                var result = client.PostAsync($"{BaseUri}/checkUserValidation", content).Result;
-                if (result.IsSuccessStatusCode == true)
+                try
                 {
-                    var a = result.Content.ReadAsStringAsync().Result;
-                    return true;
+                    var result = client.PostAsync($"{BaseUri}/checkUserValidation", content).Result;
+                    if (result.IsSuccessStatusCode == true)
+                        return "";
+                    else
+                        return "Wrong";
+                }
+                catch(Exception e)
+                {
+                    return "Can't Connect To Server.";
                 }
             }
-            return false;
         }
+
         public bool ConnectToServerInGame(string Uri, User user)
         {
             using (var client = new HttpClient())

@@ -30,7 +30,6 @@ namespace Common.Backgammon
             bgBoard = new Board();
             InitBoard();
         }
-
         #region Methods
 
         private void CleanSelectedSpike()
@@ -757,8 +756,6 @@ namespace Common.Backgammon
                         counter += cell.NumOfSoldiers;
                     }
                 }
-
-              
             }
             else if (CurrentTurnPlayer.Color == Color.White)
             {
@@ -770,7 +767,6 @@ namespace Common.Backgammon
                     }
                 }
             }
-
             CurrentTurnPlayer.NumOfSoldiersOnBoard = counter;
         }
         #endregion

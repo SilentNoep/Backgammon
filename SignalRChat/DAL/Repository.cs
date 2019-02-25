@@ -54,8 +54,9 @@ namespace SignalRChat.DAL
         public bool IsValid(string userName,string passWord)
         {
             bool IsValid = false;
-            using(var ctx = new BackgammonContext())
+            using (var ctx = new BackgammonContext())
             {
+             
                 var user = ctx.Users.FirstOrDefault(u => u.UserName == userName);
                 if (user != null)
                 {

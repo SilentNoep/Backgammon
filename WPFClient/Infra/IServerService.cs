@@ -12,19 +12,10 @@ namespace WPFClient.Infra
 
         IEnumerable<User> GetAllUsers(string Uri);
 
-
-
-
-
-
-        bool ConnectToServerSignIn(string Uri,User user);
+        string ConnectToServerSignIn(string Uri,User user);
         bool ConnectToServerRegister(string Uri, User user);
         void DisconnectFromServer(string Uri, User user);
         bool ConnectToServerInGame(string Uri, User user);
-
-
-
-
         bool AddLossToUser(string Uri, User user);
     }
 }

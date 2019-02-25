@@ -148,7 +148,8 @@ namespace WPFClient.ViewModel
                     LastName = this.LastName,
                     Birthdate = this.Birthdate
                 };
-                if(_serverService.ConnectToServerRegister("register", User))
+
+                if (_serverService.ConnectToServerRegister("register", User))
                 {
                     _chatService.GetUser(User);
                     this.UserName = "";
@@ -161,6 +162,9 @@ namespace WPFClient.ViewModel
                         currentPage = new LobbyViewModel(_chatService, _messageService, _serverService, _navigationService)
                     });
                 }
+                else
+                    _messageService.ShowError("Can't Connect To Server.", "Please Try Again");
+
             });
 
             GoToSignInView = new RelayCommand(() =>
