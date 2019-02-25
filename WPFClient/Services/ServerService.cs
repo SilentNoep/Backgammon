@@ -93,7 +93,6 @@ namespace WPFClient.Services
             }
         }
 
-
         public bool AddLossToUser(string Uri, User user)
         {
             using (var client = new HttpClient())

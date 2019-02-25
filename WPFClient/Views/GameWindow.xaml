@@ -52,19 +52,6 @@
             <Setter Property="Grid.Row" Value="3"/>
             <Setter Property="SelectedValue" Value="{Binding SelectedCell}"/>
         </Style>
-        <Style x:Key="ListBoxItemStyle" TargetType="{x:Type ListBoxItem}">
-            <Setter Property="Focusable" Value="False"/>
-            <Setter Property="IsHitTestVisible" Value="False"/>
-        </Style>
-
-
-
-
-
-
-
-
-
         <converter:GridFlipConverter x:Key="gridcv"/>
         <converter:ChatWithUser x:Key="c2"/>
         <converter:DiceConverter x:Key="DiceConverter"/>

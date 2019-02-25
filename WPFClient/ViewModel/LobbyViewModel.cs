@@ -209,8 +209,8 @@ namespace WPFClient.ViewModel
         {
             if (Answer)
             {
-                _serverService.ConnectToServerInGame("", MyUser);
-                _chatService.InGame(MyUser);
+                //_serverService.ConnectToServerInGame("", MyUser);
+                //_chatService.InGame(MyUser);
                 _chatService.DisconnectFromServer();
                 _navigationService.NavigateTo("", SelectedUser);
             }
