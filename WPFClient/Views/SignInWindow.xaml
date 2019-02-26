@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WPFClient.Views"
         xmlns:i="clr-namespace:WPFClient.ViewModel"
+             xmlns:pswrd="clr-namespace:WPFClient.Behaviors"
         mc:Ignorable="d"
        Height="550" Width="1000" 
         DataContext="{Binding Source={StaticResource Locator}, Path=SignInVM}">
@@ -15,7 +16,11 @@
         </Grid.Background>
         <Border Height="550" Width="300"  Background="White" Opacity="0.7"></Border>
         <TextBox x:Name="NameTextBox" Style="{StaticResource CustomTextBoxStyle}"  HorizontalAlignment="center" Height="35"   TextWrapping="Wrap" Text="{Binding UserName}" Margin="404,92,406,399.4" Width="166"/>
-        <TextBox x:Name="PasswordTextBox" Style="{StaticResource CustomTextBoxStyle}" HorizontalAlignment="center" Width="163" Height="35"  TextWrapping="Wrap" Text="{Binding Password}" Margin="418,179,419,336.4" />
+        <PasswordBox x:Name="PasswordBox" Style="{StaticResource CustomPassWordBoxStyle}" HorizontalAlignment="center" Width="163" Height="35" pswrd:PasswordBoxAssistant.BindPassword="True"  pswrd:PasswordBoxAssistant.BoundPassword="{Binding Password,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" Margin="418,179,419,336.4">
+            <PasswordBox.InputBindings>
+                <KeyBinding Command="{Binding SignInUserCommand}" Key="Return" />
+            </PasswordBox.InputBindings>
+        </PasswordBox>
         <TextBlock Style="{StaticResource TextBlockStyle}"   Text="Name" HorizontalAlignment="center" FontSize="20"  VerticalAlignment="Top" Margin="479,72,479,0"/>
         <TextBlock Style="{StaticResource TextBlockStyle}" Text="Password" HorizontalAlignment="center" FontSize="20"  VerticalAlignment="Top" Margin="470,142,470,0" />
         <TextBlock Text="Sign In" Style="{StaticResource TextBlockStyle}" TextAlignment="Center" HorizontalAlignment="center"  VerticalAlignment="Top" RenderTransformOrigin="-4.573,0.109" FontSize="30" Width="112" Margin="444,29,444,0"/>

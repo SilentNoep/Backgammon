@@ -230,6 +230,28 @@
                     </Setter.Value>
                 </Setter>
             </Style>
+            
+            <Style x:Key="CustomPassWordBoxStyle" TargetType="{x:Type PasswordBox}">
+                <Setter Property="FontSize" Value="20"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type PasswordBox}">
+                            <Border
+                CornerRadius="4"
+                Padding="2"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="1" >
+                                <ScrollViewer Margin="0" x:Name="PART_ContentHost"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            
+            
+            
+            
 
             <Style x:Key="ButtonStyle" TargetType="Button">
                 <Setter Property="Background" Value="{StaticResource linear}"/>
