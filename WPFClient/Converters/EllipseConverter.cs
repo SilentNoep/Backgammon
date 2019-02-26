@@ -36,8 +36,11 @@ namespace WPFClient.Converters
             {
                 Ellipse e = new Ellipse();
 
+                if(Cell.NumOfSoldiers >5)
+                    e.Margin = new System.Windows.Thickness(-Cell.NumOfSoldiers);
 
-                if(Cell.ID == 50 || Cell.ID == -50)
+
+                if (Cell.ID == 50 || Cell.ID == -50)
                 {
                     e.Height = 8;
                     e.Width = 31;
@@ -82,6 +85,10 @@ namespace WPFClient.Converters
                         }
                     }
                 }
+
+
+
+                
 
                 col.Add(e);
             }
