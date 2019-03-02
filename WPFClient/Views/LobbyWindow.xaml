@@ -45,7 +45,7 @@
         </DataTemplate>
 
 
-
+        <converter:ChatAlignment x:Key="chat"/>
         <converter:WelcomeConverter x:Key="c1"/>
         <converter:ChatWithUser x:Key="c2"/>
         <selectors:StatusSelector x:Key="selector1"
@@ -93,18 +93,27 @@
             </ListBox>
 
 
-            <Border Margin="207,154,-6,61.4">
+            <Border Margin="207,154,-6,61.4" Height="330">
                 <ListBox ItemsSource="{Binding CurrentMessages}" Background="Transparent" BorderThickness="3" BorderBrush="White" Margin="4,0,14.8,-0.2"  lb:ListBoxBehavior.ScrollOnNewItem="true" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="{x:Type ListBoxItem}">
                             <Setter Property="Focusable" Value="False"/>
                             <Setter Property="IsHitTestVisible" Value="False"/>
+                            <Setter Property="HorizontalAlignment" Value="{Binding Converter={StaticResource chat}}"/>
                         </Style>
                     </ListBox.ItemContainerStyle>
                     <ListBox.ItemTemplate >
                         <DataTemplate>
-                            <Border CornerRadius="3" Opacity="1" BorderBrush="Black" BorderThickness="2" Background="Green" >
-                                <TextBlock Style="{StaticResource TextBlockStyle}" Opacity="1" TextWrapping="Wrap" Text="{Binding}" FontSize="20"></TextBlock>
+                            <Border CornerRadius="3" Opacity="1" BorderBrush="Black" BorderThickness="2" Background="{Binding Color}"  >
+                                <StackPanel Orientation="Horizontal">
+
+                                    <TextBlock Style="{StaticResource TextBlockStyle}" Opacity="1" TextWrapping="Wrap" Text="{Binding Sender }"  FontSize="23" FontWeight="Bold"></TextBlock>
+                                    <TextBlock Style="{StaticResource TextBlockStyle}" Opacity="1" TextWrapping="Wrap" Text=" : " FontSize="25"   FontWeight="Bold"></TextBlock>
+                                    <TextBlock Style="{StaticResource TextBlockStyle}" Opacity="1" TextWrapping="Wrap" Text="{Binding Text }" FontSize="20"></TextBlock>
+                          
+
+
+                                </StackPanel>
                             </Border>
                         </DataTemplate>
                     </ListBox.ItemTemplate>

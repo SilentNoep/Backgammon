@@ -96,6 +96,7 @@
     </ApplicationDefinition>
     <Compile Include="Behaviors\ListBoxBehavior.cs" />
     <Compile Include="Behaviors\PasswordBoxAssistant.cs" />
+    <Compile Include="Converters\ChatAlignment.cs" />
     <Compile Include="Converters\ChatWithUser.cs" />
     <Compile Include="Converters\DiceConverter.cs" />
     <Compile Include="Converters\EllipseConverter.cs" />
@@ -107,6 +108,7 @@
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Models\ChatMessage.cs" />
     <Compile Include="Selectors\StatusSelector.cs" />
     <Compile Include="Services\DialogService.cs" />
     <Compile Include="Services\FrameNavigationService.cs" />

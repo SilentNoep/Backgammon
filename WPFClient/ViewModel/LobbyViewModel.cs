@@ -9,7 +9,9 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media;
 using WPFClient.Infra;
+using WPFClient.Models;
 
 namespace WPFClient.ViewModel
 {
@@ -20,12 +22,15 @@ namespace WPFClient.ViewModel
         private Infra.IDialogService _messageService;
         private INavigationService _navigationService;
         private string _message;
-        private ObservableCollection<string> _groupMessages;
-        private ObservableCollection<string> _currentMessages;
+        private bool DidISendMessage;
+        private ObservableCollection<ChatMessage> _groupMessages;
+        private ObservableCollection<ChatMessage> _currentMessages;
         private ObservableCollection<UserDetails> usersOnline;
-        private Dictionary<string, ObservableCollection<string>> _allChats;
+        private Dictionary<string, ObservableCollection<ChatMessage>> _allChats;
+        private Dictionary<string, SolidColorBrush> _usersColors;
         private UserDetails _myUser;
         private UserDetails _selectedUser;
+        Random rnd;
         #endregion
 
 
@@ -39,7 +44,7 @@ namespace WPFClient.ViewModel
                 RaisePropertyChanged();
             }
         }
-        public ObservableCollection<string> GroupMessages
+        public ObservableCollection<ChatMessage> GroupMessages
         {
             get { return _groupMessages; }
             set
@@ -48,7 +53,7 @@ namespace WPFClient.ViewModel
                 RaisePropertyChanged();
             }
         }
-        public ObservableCollection<string> CurrentMessages
+        public ObservableCollection<ChatMessage> CurrentMessages
         {
             get { return _currentMessages; }
             set
@@ -66,7 +71,7 @@ namespace WPFClient.ViewModel
                 RaisePropertyChanged();
             }
         }
-        public Dictionary<string, ObservableCollection<string>> AllChats
+        public Dictionary<string, ObservableCollection<ChatMessage>> AllChats
         {
             get { return _allChats; }
             set
@@ -101,10 +106,11 @@ namespace WPFClient.ViewModel
 
         public LobbyViewModel(IChatService chatService, Infra.IDialogService messageService, INavigationService navigationService)
         {
-            GroupMessages = new ObservableCollection<string>();
-            AllChats = new Dictionary<string, ObservableCollection<string>>();
+            rnd = new Random();
+            GroupMessages = new ObservableCollection<ChatMessage>();
+            AllChats = new Dictionary<string, ObservableCollection<ChatMessage>>();
             AllChats.Add("Lobby", GroupMessages);
-            CurrentMessages = new ObservableCollection<string>();
+            CurrentMessages = new ObservableCollection<ChatMessage>();
             CurrentMessages = GroupMessages;
             _chatService = chatService;
             _messageService = messageService;
@@ -119,12 +125,15 @@ namespace WPFClient.ViewModel
         {
             GetMyUser = new RelayCommand(() =>
             {
-                _chatService.GetUserDetails(); 
+                _chatService.GetUserDetails();
             });
-            GetUsersList = new RelayCommand(async() =>
+            GetUsersList = new RelayCommand(async () =>
             {
-                var list = await _chatService.GetAllUsers();
-                AllUsers = new ObservableCollection<UserDetails>(list.Where(u => u.UserName != MyUser.UserName));
+                AllUsers = new ObservableCollection<UserDetails>(await _chatService.GetAllUsers());
+                _usersColors = new Dictionary<string, SolidColorBrush>();
+                foreach (var item in AllUsers)
+                    _usersColors.Add(item.UserName, GetRandomColor());
+                AllUsers.Remove(AllUsers.First((u) => u.UserName == MyUser.UserName));
             });
             SendMessageCommand = new RelayCommand(() =>
             {
@@ -135,6 +144,7 @@ namespace WPFClient.ViewModel
                     else
                         _chatService.SendMessageToClient(Message, SelectedUser.UserName);
                     Message = "";
+                    DidISendMessage = true;
                 }
             });
             SelectUserCommand = new RelayCommand<UserDetails>((p) =>
@@ -149,7 +159,7 @@ namespace WPFClient.ViewModel
                             CurrentMessages = AllChats[p.UserName];
                         else
                         {
-                            AllChats.Add(p.UserName, new ObservableCollection<string>());
+                            AllChats.Add(p.UserName, new ObservableCollection<ChatMessage>());
                             CurrentMessages = AllChats[p.UserName];
                         }
                         Message = "";
@@ -181,7 +191,7 @@ namespace WPFClient.ViewModel
 
         private void RegisterToEvents()
         {
-            _chatService.ListenToStatusChangedEvents(OnUserLoggedIn, OnUserLoggedOff, OnUserInGame,OnUserRegistered, MyUser);
+            _chatService.ListenToStatusChangedEvents(OnUserLoggedIn, OnUserLoggedOff, OnUserInGame, OnUserRegistered, MyUser);
             _chatService.ListenToGroupMessages(SendMessageToAllAction);
             _chatService.ListenToClientMessages(SendMessageToClient);
             _chatService.ListenToGameInvitations(SendGameInvitation);
@@ -200,7 +210,7 @@ namespace WPFClient.ViewModel
             {
                 SelectedUser = userNameInvite;
                 if (!AllChats.ContainsKey(SelectedUser.UserName))
-                    AllChats.Add(SelectedUser.UserName, new ObservableCollection<string>());
+                    AllChats.Add(SelectedUser.UserName, new ObservableCollection<ChatMessage>());
                 CurrentMessages = AllChats[SelectedUser.UserName];
                 _chatService.AnswerInviteClientForGame(MyUser, userNameInvite, true);
             }
@@ -223,16 +233,18 @@ namespace WPFClient.ViewModel
 
         }
 
-        private void SendMessageToClient(string name, string msg,string sender)
+        private void SendMessageToClient(string nameSentTo, string msg, string sender)
         {
-            if (!AllChats.ContainsKey(name))
-                AllChats.Add(name, new ObservableCollection<string>());
-            AllChats[name].Add($"{DateTime.Now.ToString("HH:mm")} : {sender} : {msg}");
+            if (!AllChats.ContainsKey(nameSentTo))
+                AllChats.Add(nameSentTo, new ObservableCollection<ChatMessage>());
+            AllChats[nameSentTo].Add(new ChatMessage() { Text = msg, IsYou = DidISendMessage, Color = _usersColors[sender], Time = DateTime.Now.ToShortTimeString(), Sender = sender});
+            DidISendMessage = false;
         }
 
         private void SendMessageToAllAction(string name, string msg)
         {
-            GroupMessages.Add($"{DateTime.Now.ToString("HH:mm")} : {name} : {msg}");
+            GroupMessages.Add(new ChatMessage() { Text = msg, IsYou = DidISendMessage, Color = _usersColors[name], Time = DateTime.Now.ToShortTimeString(), Sender = name});
+            DidISendMessage = false;
         }
 
 
@@ -248,6 +260,7 @@ namespace WPFClient.ViewModel
 
         public void OnUserRegistered(UserDetails userName)
         {
+            _usersColors.Add(userName.UserName, GetRandomColor());
             AllUsers.Add(userName);
             AllUsers = new ObservableCollection<UserDetails>(AllUsers.OrderByDescending(u => u.Status).ThenBy(u => u.UserName));
         }
@@ -266,6 +279,12 @@ namespace WPFClient.ViewModel
             if (userName.Wins != 0)
                 user.Wins = userName.Wins;
             AllUsers = new ObservableCollection<UserDetails>(AllUsers.OrderByDescending(u => u.Status).ThenBy(u => u.UserName));
+        }
+
+        private SolidColorBrush GetRandomColor()
+        {
+            var color = new SolidColorBrush(Color.FromRgb((byte)rnd.Next(1, 180), (byte)rnd.Next(1, 180), (byte)rnd.Next(1, 180)));
+            return color;
         }
 
         #endregion
