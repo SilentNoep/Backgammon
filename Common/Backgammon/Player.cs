@@ -8,7 +8,7 @@ namespace Common.Backgammon
 {
     public class Player
     {
-        public User User { get; set; }
+        public string UserName { get; set; }
         public Color Color { get; set; }
         public int NumOfSoldiersOnBoard { get; set; }
         public bool IsBaseOnLeft { get; set; }

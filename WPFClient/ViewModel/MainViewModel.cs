@@ -2,6 +2,7 @@ using Common;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Messaging;
+using GalaSoft.MvvmLight.Views;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -9,7 +10,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows.Input;
 using WPFClient.Infra;
-using WPFClient.Messages;
 
 namespace WPFClient.ViewModel
 {
@@ -17,70 +17,46 @@ namespace WPFClient.ViewModel
     public class MainViewModel : ViewModelBase
     {
         #region Fields
-        private IPageViewModel _currentPageViewModel;
-        private IServerService _serverService;
         private IChatService _chatService;
-        private IDialogService _messageService;
-        private SignInViewModel SignInVM;
+        private Infra.IDialogService _messageService;
+        private IFrameNavigationService _navigationService;
         #endregion
 
         #region Properties / Commands
-
-        public IPageViewModel CurrentPageViewModel
+        private RelayCommand _loadedCommand;
+        public RelayCommand LoadedCommand
         {
             get
             {
-                return _currentPageViewModel;
-            }
-            set
-            {
-                if (_currentPageViewModel != value)
-                {
-                    _currentPageViewModel = value;
-                    RaisePropertyChanged();
-                }
+                return _loadedCommand
+                    ?? (_loadedCommand = new RelayCommand(
+                    () =>
+                    {
+                        _navigationService.NavigateTo("SignInWindow");
+                    }));
             }
         }
-        public ObservableCollection<User> AllUsers { get; set; }
-        public User MyUser { get; set; }
         public RelayCommand<CancelEventArgs> WindowClosingCommand { get; set; }
         #endregion
 
-        public MainViewModel(IChatService chatService, IDialogService messageService, IServerService serverService, GalaSoft.MvvmLight.Views.INavigationService navigationService)
+        public MainViewModel(IChatService chatService, Infra.IDialogService messageService, IFrameNavigationService navigationService)
         {
-            _serverService = serverService;
             _chatService = chatService;
             _messageService = messageService;
-            SignInVM = new SignInViewModel(chatService, messageService, serverService, navigationService);
-            Messenger.Default.Register(this, new Action<PageService>(ChangeViewModel));
+            _navigationService = navigationService;
             WindowClosingCommand = new RelayCommand<CancelEventArgs>((args) =>
             {
                 if (!_messageService.ShowQuestion("Are You Sure You Want To Exit?", "Bye!"))
                     args.Cancel = true;
                 else
                 {
-                    if (_chatService.User != null)
-                    {
-                        _serverService.DisconnectFromServer("", _chatService.User);
-                        _chatService.SignOut(_chatService.User);
-                        _chatService.DisconnectFromServer();
-                        _messageService.ShowMessage("Signed Out SuccessFully", "Bye!");
-                    }
+                    //if (_chatService.User != null)
+                    //{
+                    _chatService.SignOut();
+                    //    _messageService.ShowMessage("Signed Out SuccessFully", "Bye!");
+                    //}
                 }
-              
-
-
             });
-            // Set starting page
-            CurrentPageViewModel = SignInVM;
         }
-
-        #region Methods
-
-        private void ChangeViewModel(PageService page)
-        {
-            CurrentPageViewModel = page.currentPage;
-        }
-        #endregion
     }
 }

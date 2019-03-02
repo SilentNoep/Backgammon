@@ -1,6 +1,7 @@
 ﻿using Common;
 using Common.Backgammon;
 using Microsoft.AspNet.SignalR;
+using SignalRChat.BL;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,8 +12,8 @@ namespace Hubs.SignalRChat
 {
     public class UserHub : Hub
     {
-
-        static BackgammonManager bgManager = new BackgammonManager();
+        static UserManager userManager = new UserManager();
+        static GameManager bgManager = new GameManager();
 
 
         static Dictionary<string, string> userConnections = new Dictionary<string, string>();  // value is usernames
@@ -23,6 +24,10 @@ namespace Hubs.SignalRChat
 
 
         #region Chat/Lobby
+        public IEnumerable<UserDetails> GetAllUsers()
+        {
+            return userManager.GetAllUsers();
+        }
         public void SendToAll(string message)
         {
             Clients.All.broadcastMessage(userConnections[Context.ConnectionId], message);
@@ -46,35 +51,62 @@ namespace Hubs.SignalRChat
                 Clients.Client(userNames[toClient]).broadcastMessageToClient(fromClient, message);
                 Clients.Caller.broadcastMessageToClient(toClient, message);
             }
-               
+        }
+        public void InGame()
+        {
+            var userName = userConnections[Context.ConnectionId];
+            userManager.EnteredGame(userName);
+            Notify(GetUserDetails(userName, Status.InGame), UserInGame);
+        }
+        public string SignIn(CommonUser User)
+        {
+            var message = userManager.LogIn(User);
+            
+            Notify(GetUserDetails(User.UserName, Status.Online), UserConnected);
+            userManager.UserInvited(User.UserName, false);
+            return message;
+        }
+        public void SignOut()
+        {
+            var userName = userConnections[Context.ConnectionId];
+            userManager.LogOff(userName);
+            Notify(GetUserDetails(userName, Status.Offline), UserDisonnected);
+        }
+        public string Register(CommonUser User)
+        {
+            var message = userManager.Register(User);
+            Notify(GetUserDetails(User.UserName, Status.Online), UserRegistered);
+            return message;
         }
 
+        public void GetMyUserDetails()
+        {
+            var userName = userConnections[Context.ConnectionId];
+            Notify(GetUserDetails(userName, Status.Online), GetUser);
+        }
 
-        public void InGame(User User)
+        public void GetUser(UserDetails user)
         {
-            Notify(User, UserInGame);
+            Clients.Caller.GetMyUserDetails(user);
         }
-        public void SignIn(User User)
-        {
-            Notify(User, UserConnected);
-        }
-        public void SignOut(User User)
-        {
-            Notify(User, UserDisonnected);
-        }
-        public void UserInGame(User user)
+        public void UserInGame(UserDetails user)
         {
             this.Clients.Others.InGameNotificated(user);
         }
-        public void UserConnected(User user)
+        public void UserConnected(UserDetails user)
         {
             this.Clients.Others.LogInNotificated(user);
         }
-        public void UserDisonnected(User user)
+        public void UserDisonnected(UserDetails user)
         {
             this.Clients.Others.LogOffNotificated(user);
         }
-        public void Notify(User user, Action<User> userNotificationMethod)
+        public void UserRegistered(UserDetails user)
+        {
+            this.Clients.Others.RegisterNotificated(user);
+        }
+
+        public void Notify(UserDetails user, Action<UserDetails> userNotificationMethod)
         {
             Task.Run(() =>
             {
@@ -83,14 +115,22 @@ namespace Hubs.SignalRChat
         }
         #endregion
 
-        #region Game
-        public void InviteToGame(User fromClient, User toClient)
+
+        private UserDetails GetUserDetails(string userName, Status status, bool HasInvited = false)
         {
+            return new UserDetails() { UserName = userName, Status = status, HasInvitedGame = HasInvited };
+        }
+
+
+        #region Game
+        public void InviteToGame(UserDetails fromClient, UserDetails toClient)
+        {
+            userManager.UserInvited(fromClient.UserName,true);
             if (userNames.ContainsKey(toClient.UserName))
                 Clients.Client(userNames[toClient.UserName]).broadcastInvitationGame(fromClient);
         }
 
-        public void AnswerInviteToGame(User fromClient, User toClient, bool answer)
+        public void AnswerInviteToGame(UserDetails fromClient, UserDetails toClient, bool answer)
         {
             if (userNames.ContainsKey(toClient.UserName))
             {
@@ -146,7 +186,7 @@ namespace Hubs.SignalRChat
 
             if (IsItMyTurn)
             {
-                Clients.Client(connIDFromClient).broadcastMovedChipToClientAndMe(board, true,numberTurn,TotalMoves, IsTurnCanceled, DidPlayerMove);
+                Clients.Client(connIDFromClient).broadcastMovedChipToClientAndMe(board, true, numberTurn, TotalMoves, IsTurnCanceled, DidPlayerMove);
                 Clients.Client(connIDtoClient).broadcastMovedChipToClientAndMe(board, false, numberTurn, TotalMoves, IsTurnCanceled, DidPlayerMove);
             }
             if (IsItClientsTurn)
@@ -157,10 +197,13 @@ namespace Hubs.SignalRChat
 
         }
 
-        public void GetPlayers(User fromClient)
+        public void GetPlayers()
         {
-            Player player = bgManager.InitPlayer(fromClient);
-            Clients.Caller.GetMyPlayer(player);
+            var userName = userConnections[Context.ConnectionId];
+            bool DidInvite = userManager.DidUserInvite(userName);
+            var userDetails = GetUserDetails(userName, Status.InGame, DidInvite);
+            Player player = bgManager.InitPlayer(userDetails);
+            Clients.Caller.GetMyPlayer(player,userDetails);
         }
         #endregion
 

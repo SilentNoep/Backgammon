@@ -2,6 +2,7 @@
 using Common.Backgammon;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
+using GalaSoft.MvvmLight.Views;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -10,32 +11,31 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using WPFClient.Infra;
+using WPFClient.Services;
 
 namespace WPFClient.ViewModel
 {
-    public class GameViewModel : ViewModelBase, IPageViewModel
+    public class GameViewModel : ViewModelBase
     {
         #region Members
+        GameService _gameService;
         private IChatService _chatService;
-        private IDialogService _messageService;
-        private IServerService _serverService;
-        private GalaSoft.MvvmLight.Views.INavigationService _navigationService;
+        private Infra.IDialogService _messageService;
+        private INavigationService _navigationService;
         private ObservableCollection<string> _currentMessages;
         private bool _isMyTurn;
-        private User _myUser;
-        private User _selectedUser;
+        private UserDetails _myUser;
+        private UserDetails _selectedUser;
         private Cell _selectedCell;
         private Player _myPlayer;
         private string _message;
         private string _messageToSend;
         private Board _myBoard;
-        private BackgammonManager bg;
         #endregion
 
         #region Properties
         public event EventHandler PlayRollDice;
         public event EventHandler PlayMoveChip;
-        public string Name { get; set; } = "Game";
         public Board MyBoard
         {
             get { return _myBoard; }
@@ -50,7 +50,7 @@ namespace WPFClient.ViewModel
                 RaisePropertyChanged();
             }
         }
-        public User SelectedUser
+        public UserDetails SelectedUser
         {
             get { return _selectedUser; }
             set
@@ -59,7 +59,7 @@ namespace WPFClient.ViewModel
                 RaisePropertyChanged();
             }
         }
-        public User MyUser
+        public UserDetails MyUser
         {
             get { return _myUser; }
             set { _myUser = value; RaisePropertyChanged(); }
@@ -108,37 +108,35 @@ namespace WPFClient.ViewModel
         public RelayCommand SendMessageCommand { get; set; }
         #endregion
 
-        public GameViewModel(IChatService chatService, IDialogService messageService, IServerService serverService, GalaSoft.MvvmLight.Views.INavigationService navigationService)
+        public GameViewModel(IChatService chatService, Infra.IDialogService messageService, INavigationService navigationService)
         {
 
-            bg = new BackgammonManager();
             MyPlayer = new Player();
             CurrentMessages = new ObservableCollection<string>();
             _chatService = chatService;
-            _messageService = messageService;
-            _serverService = serverService;
-            _navigationService = navigationService;
-            MyUser = _chatService.User;
-            _chatService.ListenToDiceRoll(GetDices);
-            _chatService.ListenToGetPlayer(GetPlayer);
-            _chatService.GetPlayer(MyUser);
-            _chatService.ListenToBoardUpdated(UpdateBoard);
-            _chatService.ListenToBoardUpdatedAndTurn(UpdateBoardAndTurn);
             _chatService.ListenToClientMessages(SendMessageToClient);
+            _messageService = messageService;
+            _navigationService = navigationService;
+            _gameService = new GameService("", _chatService.UserHubProxy, _chatService.HubConnection);
+            _gameService.ListenToDiceRoll(GetDices);
+            _gameService.ListenToGetPlayer(GetPlayer);
+            _gameService.GetPlayer();
+            _gameService.ListenToBoardUpdated(UpdateBoard);
+            _gameService.ListenToBoardUpdatedAndTurn(UpdateBoardAndTurn);
             MyBoard = new Board();
-            MyBoard = bg.bgBoard;
+            MyBoard.NewGame();
 
-            WindowClosingCommand = new RelayCommand<CancelEventArgs>((args) =>
+
+            WindowClosingCommand = new RelayCommand<CancelEventArgs>(async (args) =>
             {
                 if (!_messageService.ShowQuestion("Are You Sure You Want To Exit? It Will Be Considered A LOSS!!", "Bye!"))
                     args.Cancel = true;
                 else
                 {
-                    if (_chatService.User != null)
+                    if (MyUser != null)
                     {
-                        _serverService.ConnectToServerSignIn("", MyUser);
-                        _chatService.SignIn(MyUser);
-                        _serverService.AddLossToUser("", MyUser);
+                        //await _chatService.SignIn(MyUser);
+
                     }
                 }
             });
@@ -159,7 +157,7 @@ namespace WPFClient.ViewModel
                     if (!MyPlayer.HasRolled)
                     {
                         MyPlayer.HasRolled = true;
-                        _chatService.RollDice(SelectedUser.UserName);
+                        _gameService.RollDice(SelectedUser.UserName);
                     }
                     else
                         Message = $"{MyUser.UserName} You Have Rolled Already! Please Pick Your Move !!";
@@ -179,7 +177,7 @@ namespace WPFClient.ViewModel
                         {
                             if (SelectedCell.ID == p.ID)
                             {
-                                _chatService.GetOrRemovePick(SelectedUser.UserName, SelectedCell.ID, MyPlayer);
+                                _gameService.GetOrRemovePick(SelectedUser.UserName, SelectedCell.ID, MyPlayer);
                                 SelectedCell = null;
                             }
                             else
@@ -195,7 +193,7 @@ namespace WPFClient.ViewModel
                                             if (p.ColorOfCell == MyPlayer.Color || p.ColorOfCell == Color.Empty || p.NumOfSoldiers == 1)
                                             {
 
-                                                _chatService.MoveChipToSpike(SelectedUser.UserName, p.ID, MyPlayer);
+                                                _gameService.MoveChipToSpike(SelectedUser.UserName, p.ID, MyPlayer);
                                                 SelectedCell = null;
                                             }
                                             else
@@ -228,10 +226,10 @@ namespace WPFClient.ViewModel
                                                 }
 
                                                 if (CanMoveToPile(SelectedCell.ID - number))
-                                                    _chatService.MoveChipToSpike(SelectedUser.UserName, p.ID, MyPlayer);
+                                                    _gameService.MoveChipToSpike(SelectedUser.UserName, p.ID, MyPlayer);
                                                 else
                                                 {
-                                                    _chatService.MoveChipToSpike(SelectedUser.UserName, p.ID, MyPlayer);
+                                                    _gameService.MoveChipToSpike(SelectedUser.UserName, p.ID, MyPlayer);
                                                     Message = $"{MyUser.UserName} You Cant GO THERE!!";
                                                 }
                                                 SelectedCell = null;
@@ -252,7 +250,7 @@ namespace WPFClient.ViewModel
                                         {
                                             if (p.ColorOfCell == MyPlayer.Color || p.ColorOfCell == Color.Empty || p.NumOfSoldiers == 1)
                                             {
-                                                _chatService.MoveChipToSpike(SelectedUser.UserName, p.ID, MyPlayer);
+                                                _gameService.MoveChipToSpike(SelectedUser.UserName, p.ID, MyPlayer);
                                                 SelectedCell = null;
                                             }
                                             else
@@ -264,10 +262,10 @@ namespace WPFClient.ViewModel
                                             {
                                                 number = -1;
                                                 if (CanMoveToPile(SelectedCell.ID - number))
-                                                    _chatService.MoveChipToSpike(SelectedUser.UserName, p.ID, MyPlayer);
+                                                    _gameService.MoveChipToSpike(SelectedUser.UserName, p.ID, MyPlayer);
                                                 else
                                                 {
-                                                    _chatService.MoveChipToSpike(SelectedUser.UserName, p.ID, MyPlayer);
+                                                    _gameService.MoveChipToSpike(SelectedUser.UserName, p.ID, MyPlayer);
                                                     Message = $"{MyUser.UserName} You Cant GO THERE With That Soldier!!";
                                                 }
 
@@ -313,7 +311,7 @@ namespace WPFClient.ViewModel
                                 else
                                 {
                                     SelectedCell = p;
-                                    _chatService.GetOrRemovePick(SelectedUser.UserName, SelectedCell.ID, MyPlayer);
+                                    _gameService.GetOrRemovePick(SelectedUser.UserName, SelectedCell.ID, MyPlayer);
                                 }
 
                             }
@@ -429,8 +427,9 @@ namespace WPFClient.ViewModel
             }
         }
 
-        private void GetPlayer(Player player)
+        private void GetPlayer(Player player, UserDetails user)
         {
+            MyUser = user;
             MyPlayer = player;
             IsMyTurn = player.IsMyTurn;
             if (MyPlayer.IsMyTurn)

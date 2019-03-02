@@ -17,7 +17,7 @@ namespace WPFClient.Converters
                 return "You Are In Chat Room With All The Users Online";
             else
             {
-                var user = (User)value;
+                var user = (UserDetails)value;
                 return "Chat With " + user.UserName;
             }
         }

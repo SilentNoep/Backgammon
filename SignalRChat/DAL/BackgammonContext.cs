@@ -5,6 +5,7 @@ namespace SignalRChat.DAL
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Linq;
     using Common;
+    using SignalRChat.DAL.Models;
 
     public partial class BackgammonContext : DbContext
     {

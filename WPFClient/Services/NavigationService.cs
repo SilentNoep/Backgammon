@@ -27,7 +27,7 @@ namespace WPFClient.Services
         public void NavigateTo(string pageKey, object parameter)
         {
             //GameWindow =
-            new GameWindow(parameter as User).ShowDialog();
+            new GameWindow(parameter as UserDetails).ShowDialog();
 
 
 

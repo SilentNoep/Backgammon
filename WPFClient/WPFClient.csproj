@@ -102,18 +102,16 @@
     <Compile Include="Converters\GridFlipConverter.cs" />
     <Compile Include="Converters\WelcomeConverter.cs" />
     <Compile Include="Infra\IDialogService.cs" />
-    <Compile Include="Infra\IPageViewModel.cs" />
+    <Compile Include="Infra\IFrameNavigationService.cs" />
     <Compile Include="Infra\IChatService.cs" />
-    <Compile Include="Infra\IServerService.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Messages\PageService.cs" />
     <Compile Include="Selectors\StatusSelector.cs" />
     <Compile Include="Services\DialogService.cs" />
+    <Compile Include="Services\FrameNavigationService.cs" />
     <Compile Include="Services\GameService.cs" />
     <Compile Include="Services\NavigationService.cs" />
-    <Compile Include="Services\ServerService.cs" />
     <Compile Include="Services\ChatService.cs" />
     <Compile Include="ViewModel\GameViewModel.cs" />
     <Compile Include="ViewModel\LobbyViewModel.cs" />

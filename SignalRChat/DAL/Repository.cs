@@ -1,4 +1,5 @@
 ﻿using Common;
+using SignalRChat.DAL.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,32 +11,8 @@ namespace SignalRChat.DAL
 {
     public class Repository
     {
-        public User AddUser(string firstName, string lastName, string userName, string password, DateTime? birthdate)
-        {
-            User newUser;
-            using (var ctx = new BackgammonContext())
-            {
-                var userCheck =(User) ctx.Users.FirstOrDefault(p => p.UserName == userName);
-                if (userCheck != null)
-                    return null;
-                newUser = new User()
-                {
-                    FirstName = firstName,
-                    LastName = lastName,
-                    UserName = userName,
-                    Password = SHA256Hash(password),
-                    Wins = 0,
-                    Losses = 0,
-                    Birthdate = birthdate,
-                    DateUserRegistered = DateTime.Now,
-                    LastOnline = DateTime.Now,
-                    Status = Status.Online
-                };
-                ctx.Users.Add(newUser);
-                ctx.SaveChanges();
-            }
-            return newUser;
-        }
+
+
         public IEnumerable<User> GetAllUsers()
         {
             using (var ctx = new BackgammonContext())
@@ -43,6 +20,32 @@ namespace SignalRChat.DAL
                 return ctx.Users.ToList();
             }
         }
+
+        public void AddUser(User user)
+        {
+            if (user == null) throw new NullReferenceException();
+
+            user.Password = SHA256Hash(user.Password);
+            using (var ctx = new BackgammonContext())
+            {
+                ctx.Users.Add(user);
+                ctx.SaveChanges();
+            }
+        }
+
+        public void UpdateDetails(User user)
+        {
+            if (user == null) throw new NullReferenceException();
+
+            using (var ctx = new BackgammonContext())
+            {
+                var originalEntity = ctx.Users.Find(user.Id);
+                ctx.Entry(originalEntity).CurrentValues.SetValues(user);
+                ctx.SaveChanges();
+            }
+        }
+
+
         public User GetUser(string userName)
         {
             using (var ctx = new BackgammonContext())
@@ -51,12 +54,11 @@ namespace SignalRChat.DAL
             }
         }
 
-        public bool IsValid(string userName,string passWord)
+        public bool IsValid(string userName, string passWord)
         {
             bool IsValid = false;
             using (var ctx = new BackgammonContext())
             {
-             
                 var user = ctx.Users.FirstOrDefault(u => u.UserName == userName);
                 if (user != null)
                 {
@@ -64,9 +66,9 @@ namespace SignalRChat.DAL
                     {
                         //if (user.Status == Status.Online)
                         //{
-                            IsValid = true;
-                            user.Status = Status.Online;
-                            ctx.SaveChanges();
+                        IsValid = true;
+                        user.Status = Status.Online;
+                        ctx.SaveChanges();
                         //}
                     }
                 }
@@ -96,6 +98,24 @@ namespace SignalRChat.DAL
             }
         }
 
+        public void HasInvited(User user, bool DidInvite)
+        {
+            using (var ctx = new BackgammonContext())
+            {
+                var User = ctx.Users.FirstOrDefault(u => u.UserName == user.UserName);
+                User.HasInvitedGame = DidInvite;
+                ctx.SaveChanges();
+            }
+        }
+
+        public bool DidUserInvite(User user)
+        {
+            using (var ctx = new BackgammonContext())
+            {
+                var User = ctx.Users.FirstOrDefault(u => u.UserName == user.UserName);
+                return User.HasInvitedGame;
+            }
+        }
 
 
 

@@ -121,8 +121,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\WebApiConfig.cs" />
-    <Compile Include="Controllers\UserController.cs" />
+    <Compile Include="BL\GameManager.cs" />
+    <Compile Include="BL\UserManager.cs" />
     <Compile Include="DAL\BackgammonContext.cs" />
+    <Compile Include="DAL\Models\User.cs" />
     <Compile Include="DAL\Repository.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -139,7 +141,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="BL\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

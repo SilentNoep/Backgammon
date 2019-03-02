@@ -17,7 +17,7 @@ namespace WPFClient.Views
     /// <summary>
     /// Interaction logic for LobbyWindow.xaml
     /// </summary>
-    public partial class LobbyWindow : UserControl
+    public partial class LobbyWindow : Page
     {
         public LobbyWindow()
         {

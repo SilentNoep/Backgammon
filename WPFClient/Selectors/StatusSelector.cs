@@ -17,7 +17,7 @@ namespace WPFClient.Selectors
 
         public override DataTemplate SelectTemplate(object item, DependencyObject container)
         {
-            var student = item as User;
+            var student = item as UserDetails;
             if (student.Status == Status.Online)
                 return UserOnlineTemplate;
             else if (student.Status == Status.InGame)

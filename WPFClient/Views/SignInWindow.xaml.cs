@@ -18,7 +18,7 @@ namespace WPFClient.Views
     /// <summary>
     /// Interaction logic for SignInWindow.xaml
     /// </summary>
-    public partial class SignInWindow : UserControl
+    public partial class SignInWindow : Page
     {
         public SignInWindow()
         {

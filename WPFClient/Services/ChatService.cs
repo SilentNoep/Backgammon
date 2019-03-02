@@ -13,62 +13,21 @@ namespace WPFClient.Services
 {
     public class ChatService : IChatService
     {
-        HubConnection hubConnection;
-        IHubProxy userHubProxy;
+        static HubConnection hubConnection;
+        static IHubProxy userHubProxy;
         Dictionary<string, string> UserDetails;
-        public User User { get; set; }
-        public User SelectedUser { get; set; }
-        public bool HasEvents { get; set; }
-        public bool IsConnected { get; set; }
-        public void GetUser(User user)            // Get The User
-        {
-            User = user;
-        }
-        public void GetSelectedUser(User user)            // Get The Selected User
-        {
-            SelectedUser = user;
-        }
 
+        public IHubProxy UserHubProxy { get => userHubProxy; }
+        public HubConnection HubConnection { get => hubConnection; }
 
         #region Enter App / Chat Stuff
-        public void ConnectToHub()
-        {
-            UserDetails = new Dictionary<string, string>();
-            UserDetails.Add("UserName", User.UserName);
-            hubConnection = new HubConnection("http://localhost:52527/",UserDetails);
-            userHubProxy = hubConnection.CreateHubProxy("UserHub");
-            IsConnected = true;
-        }                               //connect to the hub
-
         public void ListenToGroupMessages(Action<string, string> SendMessageToAllAction)   //SIGN UP TO THIS EVENT (WHENEVER IT SHOOTS)
         {
-            Application.Current.Dispatcher.Invoke(
-                 () =>
-                 {
-                     // Code to run on the GUI thread.
-                     Task connectTask = Task.Run(() =>
-                     {
-                         userHubProxy.On("broadcastMessage", (string name, string message) => MessageNotificated(SendMessageToAllAction, name, message));
-                         hubConnection.Start().Wait();
-                     });
-                     connectTask.ConfigureAwait(false);  //Does not return to and deadlocks the UI thread after execution
-                     connectTask.Wait();
-                 });
-        }
-
-        public void SendMessageToAll(string msg)             // SHOOT EVENT TO WHOEVER SIGNED UP TO IT
-        {
-            Task connectTask = Task.Run(() =>
+            userHubProxy.On("broadcastMessage", (string userName, string message) =>
             {
-                if (hubConnection.State == ConnectionState.Connected)
-                {
-                    userHubProxy.Invoke("SendToAll", msg).Wait(500);
-                }
+                Application.Current.Dispatcher.Invoke(() => SendMessageToAllAction.Invoke(userName, message));
             });
-            connectTask.ConfigureAwait(false);  //Does not return to and deadlocks the UI thread after execution
-            connectTask.Wait();
         }
-
         public void ListenToClientMessages(Action<string, string> SendMessageToAllAction)   //SIGN UP TO THIS EVENT (WHENEVER IT SHOOTS)
         {
             Application.Current.Dispatcher.Invoke(
@@ -84,7 +43,167 @@ namespace WPFClient.Services
                      connectTask.Wait();
                  });
         }
+        public void ListenToStatusChangedEvents(Action<UserDetails> LogInNotification, Action<UserDetails> LogOffNotification, Action<UserDetails> InGameNotification, Action<UserDetails>RegisterNotification, UserDetails user)   //SIGN UP TO THIS EVENT (WHENEVER IT SHOOTS)
+        {
+            //Server methods should be called on non UI thread
+            Task connectTask = Task.Run(() =>
+            {
+                userHubProxy.On("LogInNotificated", (UserDetails userName) => Notify(LogInNotification, userName));
+                hubConnection.Start().Wait();
 
+            });
+            connectTask.ConfigureAwait(false);  //Does not return to and deadlocks the UI thread after execution
+            connectTask.Wait();
+
+            Task connectTask2 = Task.Run(() =>
+            {
+                userHubProxy.On("LogOffNotificated", (UserDetails userName) => Notify(LogOffNotification, userName));
+                hubConnection.Start().Wait();
+            });
+            connectTask2.ConfigureAwait(false);
+            connectTask2.Wait();
+
+            Task connectTask3 = Task.Run(() =>
+            {
+                userHubProxy.On("InGameNotificated", (UserDetails userName) => Notify(InGameNotification, userName));
+                hubConnection.Start().Wait();
+            });
+            connectTask3.ConfigureAwait(false);
+            connectTask3.Wait();
+
+            Task connectTask4 = Task.Run(() =>
+            {
+                userHubProxy.On("RegisterNotificated", (UserDetails userName) => Notify(RegisterNotification, userName));
+                hubConnection.Start().Wait();
+            });
+            connectTask4.ConfigureAwait(false);
+            connectTask4.Wait();
+
+
+        }
+        public void ListenToGameInvitations(Action<UserDetails> InviteGameAction)   //SIGN UP TO THIS EVENT (WHENEVER IT SHOOTS)
+        {
+            Application.Current.Dispatcher.Invoke(
+                 () =>
+                 {
+                     // Code to run on the GUI thread.
+                     Task connectTask = Task.Run(() =>
+                     {
+                         userHubProxy.On("broadcastInvitationGame", (UserDetails name) => InviteGameNotificated(InviteGameAction, name));
+                         hubConnection.Start().Wait();
+                     });
+                     connectTask.ConfigureAwait(false);  //Does not return to and deadlocks the UI thread after execution
+                     connectTask.Wait();
+                 });
+        }
+        public void ListenAnswerToGameInvitations(Action<UserDetails, bool> InviteGameAction)   //SIGN UP TO THIS EVENT (WHENEVER IT SHOOTS)
+        {
+            Application.Current.Dispatcher.Invoke(
+                 () =>
+                 {
+                     // Code to run on the GUI thread.
+                     Task connectTask = Task.Run(() =>
+                     {
+                         userHubProxy.On("broadcastAnswerInvitationGame", (UserDetails name, bool answer) => AnswerInviteGameNotificated(InviteGameAction, name, answer));
+                         hubConnection.Start().Wait();
+                     });
+                     connectTask.ConfigureAwait(false);  //Does not return to and deadlocks the UI thread after execution
+                     connectTask.Wait();
+                 });
+        }
+        public void ListenGetUserDetails (Action<UserDetails> InviteGameAction)   //SIGN UP TO THIS EVENT (WHENEVER IT SHOOTS)
+        {
+            Application.Current.Dispatcher.Invoke(
+                 () =>
+                 {
+                     // Code to run on the GUI thread.
+                     Task connectTask = Task.Run(() =>
+                     {
+                         userHubProxy.On("GetMyUserDetails", (UserDetails name) => Notify(InviteGameAction, name));
+                         hubConnection.Start().Wait();
+                     });
+                     connectTask.ConfigureAwait(false);  //Does not return to and deadlocks the UI thread after execution
+                     connectTask.Wait();
+                 });
+        }
+
+
+        public async Task<IEnumerable<UserDetails>> GetAllUsers()
+        {
+            try
+            {
+                var getAllUsersTask = await userHubProxy.Invoke<IEnumerable<UserDetails>>("GetAllUsers");
+                return getAllUsersTask.OrderByDescending(u => u.Status).ThenBy(u => u.UserName);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+        public async Task<string> SignIn(CommonUser user)   // SHOOT EVENT TO WHOEVER SIGNED UP TO IT
+        {
+            try
+            {
+                await ConnectToServer(user);
+                var registerTask = userHubProxy.Invoke<string>("SignIn", user);
+                return registerTask.Result;
+            }
+            catch (Exception e)
+            {
+                return e.Message;
+            }
+        }
+        public string SignOut()
+        {
+            try
+            {
+                var logOffTask = userHubProxy.Invoke<string>("SignOut");
+                hubConnection.Dispose();
+                return logOffTask.Result;
+            }
+
+            catch (Exception e)
+            {
+                return e.Message;
+            }
+        }            // SHOOT EVENT TO WHOEVER SIGNED UP TO IT
+        public void InGame()
+        {
+            //Server methods should be called on non UI thread
+            Task registerTask = Task.Run(() =>
+            {
+                userHubProxy.Invoke("InGame").Wait(5000);
+                return;
+            });
+            registerTask.ConfigureAwait(false);//Does not return to and deadlocks the UI thread after execution
+            registerTask.Wait();
+        }            // SHOOT EVENT TO WHOEVER SIGNED UP TO IT
+        public async Task<string> Register(CommonUser user)
+        {
+            try
+            {
+                await ConnectToServer(user);
+                var registerTask = userHubProxy.Invoke<string>("Register", user);
+                return registerTask.Result;
+            }
+            catch (Exception e)
+            {
+                return e.Message;
+            }
+        }
+        public async Task<string> InviteClientForGame(UserDetails fromClient, UserDetails toClient)                   // SHOOT EVENT TO WHOEVER SIGNED UP TO IT
+        {
+            //Server methods should be called on non UI thread
+            var sendGameReqestTask = await userHubProxy.Invoke<string>("InviteToGame", fromClient, toClient);
+            return sendGameReqestTask;
+        }
+        public async Task<string> AnswerInviteClientForGame(UserDetails fromClient, UserDetails toClient, bool answer)                   // SHOOT EVENT TO WHOEVER SIGNED UP TO IT
+        {
+            //Server methods should be called on non UI thread
+
+            var answerGameRequestTask = await userHubProxy.Invoke<string>("AnswerInviteToGame", fromClient, toClient, answer);
+            return answerGameRequestTask;
+        }
         public void SendMessageToClient(string msg, string username)             // SHOOT EVENT TO WHOEVER SIGNED UP TO IT
         {
             Task connectTask = Task.Run(() =>
@@ -97,123 +216,29 @@ namespace WPFClient.Services
             connectTask.ConfigureAwait(false);  //Does not return to and deadlocks the UI thread after execution
             connectTask.Wait();
         }
-
-        public void ListenToStatusChangedEvents(Action<User> LogInNotification, Action<User> LogOffNotification, Action<User> InGameNotification, User user)   //SIGN UP TO THIS EVENT (WHENEVER IT SHOOTS)
+        public void SendMessageToAll(string msg)             // SHOOT EVENT TO WHOEVER SIGNED UP TO IT
         {
-            //Server methods should be called on non UI thread
             Task connectTask = Task.Run(() =>
             {
-                userHubProxy.On("LogInNotificated", (User userName) => LogInNotificated(LogInNotification, userName));
-                hubConnection.Start().Wait();
-
+                if (hubConnection.State == ConnectionState.Connected)
+                {
+                    userHubProxy.Invoke("SendToAll", msg).Wait(500);
+                }
             });
             connectTask.ConfigureAwait(false);  //Does not return to and deadlocks the UI thread after execution
             connectTask.Wait();
-
-            Task connectTask2 = Task.Run(() =>
-            {
-                userHubProxy.On("LogOffNotificated", (User userName) => LogOffNotificated(LogOffNotification, userName));
-                hubConnection.Start().Wait();
-            });
-            connectTask2.ConfigureAwait(false);
-            connectTask2.Wait();
-
-            Task connectTask3 = Task.Run(() =>
-            {
-                userHubProxy.On("InGameNotificated", (User userName) => InGameNotificated(InGameNotification, userName));
-                hubConnection.Start().Wait();
-            });
-            connectTask3.ConfigureAwait(false);
-            connectTask3.Wait();
-
-            HasEvents = true;
-
         }
-
-        public void SignIn(User user)   // SHOOT EVENT TO WHOEVER SIGNED UP TO IT
+        public void GetUserDetails()
         {
-            //Server methods should be called on non UI thread
             Task registerTask = Task.Run(() =>
             {
-                userHubProxy.Invoke("SignIn", user).Wait(500);
-
-            });
-            registerTask.ConfigureAwait(false);//Does not return to and deadlocks the UI thread after execution
-            registerTask.Wait();
-        }
-
-        public void SignOut(User user)
-        {
-            //Server methods should be called on non UI thread
-            Task registerTask = Task.Run(() =>
-            {
-                userHubProxy.Invoke("SignOut", user).Wait(5000);
+                userHubProxy.Invoke("GetMyUserDetails").Wait(200);
                 return;
             });
             registerTask.ConfigureAwait(false);//Does not return to and deadlocks the UI thread after execution
             registerTask.Wait();
-        }            // SHOOT EVENT TO WHOEVER SIGNED UP TO IT
-
-        public void InGame(User user)
-        {
-            //Server methods should be called on non UI thread
-            Task registerTask = Task.Run(() =>
-            {
-                userHubProxy.Invoke("InGame", user).Wait(5000);
-                return;
-            });
-            registerTask.ConfigureAwait(false);//Does not return to and deadlocks the UI thread after execution
-            registerTask.Wait();
-        }            // SHOOT EVENT TO WHOEVER SIGNED UP TO IT
-
-        public void DisconnectFromServer()
-        {
-            //Server methods should be called on non UI thread
-            Task connectTask = Task.Run(() =>
-            {
-                // for now
-                hubConnection.Dispose();
-                IsConnected = false;
-
-            });
-
-            connectTask.ConfigureAwait(false);//Does not return to and deadlocks the UI thread after execution
-            connectTask.Wait();
-        }                   // disconnect from the hub
-
-        public void LogOffNotificated(Action<User> whatToExecute, User message)
-        {
-            //View Model methods should run on the main thread
-            Application.Current.Dispatcher.Invoke(
-                   () =>
-                   {
-                       // Code to run on the GUI thread.
-                       whatToExecute(message);
-                   });
-
-        }               //מעטפת 
-
-        public void LogInNotificated(Action<User> whatToExecute, User message)                         //מעטפת
-        {
-            //View Model methods should run on the main thread
-            Application.Current.Dispatcher.Invoke(
-                   () =>
-                   {
-                       // Code to run on the GUI thread.
-                       whatToExecute(message);
-                   });
         }
 
-        public void InGameNotificated(Action<User> whatToExecute, User message)                         //מעטפת
-        {
-            //View Model methods should run on the main thread
-            Application.Current.Dispatcher.Invoke(
-                   () =>
-                   {
-                       // Code to run on the GUI thread.
-                       whatToExecute(message);
-                   });
-        }
 
 
 
@@ -227,35 +252,7 @@ namespace WPFClient.Services
                        whatToExecute(name, message);
                    });
         }
-
-
-
-
-
-        public void ListenToGameInvitations(Action<User> InviteGameAction)   //SIGN UP TO THIS EVENT (WHENEVER IT SHOOTS)
-        {
-            Application.Current.Dispatcher.Invoke(
-                 () =>
-                 {
-                     // Code to run on the GUI thread.
-                     Task connectTask = Task.Run(() =>
-                     {
-                         userHubProxy.On("broadcastInvitationGame", (User name) => InviteGameNotificated(InviteGameAction, name));
-                         hubConnection.Start().Wait();
-                     });
-                     connectTask.ConfigureAwait(false);  //Does not return to and deadlocks the UI thread after execution
-                     connectTask.Wait();
-                 });
-        }
-
-        public async Task<string> InviteClientForGame(User fromClient, User toClient)                   // SHOOT EVENT TO WHOEVER SIGNED UP TO IT
-        {
-            //Server methods should be called on non UI thread
-            var sendGameReqestTask = await userHubProxy.Invoke<string>("InviteToGame", fromClient, toClient);
-            return sendGameReqestTask;
-        }
-
-        public void InviteGameNotificated(Action<User> whatToExecute, User name)                          //מעטפת
+        public void InviteGameNotificated(Action<UserDetails> whatToExecute, UserDetails name)                          //מעטפת
         {
             //View Model methods should run on the main thread
             Application.Current.Dispatcher.Invoke(
@@ -265,211 +262,54 @@ namespace WPFClient.Services
                        whatToExecute(name);
                    });
         }
-
-        public void ListenAnswerToGameInvitations(Action<User, bool> InviteGameAction)   //SIGN UP TO THIS EVENT (WHENEVER IT SHOOTS)
+        public void AnswerInviteGameNotificated(Action<UserDetails, bool> whatToExecute, UserDetails name, bool answer)                          //מעטפת
         {
-            Application.Current.Dispatcher.Invoke(
-                 () =>
-                 {
-                     // Code to run on the GUI thread.
-                     Task connectTask = Task.Run(() =>
-                     {
-                         userHubProxy.On("broadcastAnswerInvitationGame", (User name, bool answer) => AnswerInviteGameNotificated(InviteGameAction, name, answer));
-                         hubConnection.Start().Wait();
-                     });
-                     connectTask.ConfigureAwait(false);  //Does not return to and deadlocks the UI thread after execution
-                     connectTask.Wait();
-                 });
+            Application.Current.Dispatcher.Invoke(() => {
+                whatToExecute(name, answer);
+            });
+        }
+        public void Notify(Action<UserDetails> whatToExecute, UserDetails name)                          //מעטפת
+        {
+            Application.Current.Dispatcher.Invoke(() => {
+                whatToExecute(name);
+            });
         }
 
-        public async Task<string> AnswerInviteClientForGame(User fromClient, User toClient, bool answer)                   // SHOOT EVENT TO WHOEVER SIGNED UP TO IT
+
+
+
+
+        private async Task<bool> ConnectToServer(CommonUser user)
+        {
+            try
+            {
+
+                UserDetails = new Dictionary<string, string>();
+                UserDetails.Add("UserName", user.UserName);
+                hubConnection = new HubConnection("http://localhost:52527/", UserDetails);
+                userHubProxy = hubConnection.CreateHubProxy("UserHub");
+                await hubConnection.Start();
+                return true;
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
+        }
+        public void DisconnectFromServer()
         {
             //Server methods should be called on non UI thread
-
-            var answerGameRequestTask = await userHubProxy.Invoke<string>("AnswerInviteToGame", fromClient, toClient, answer);
-            return answerGameRequestTask;
-        }
-
-        public void AnswerInviteGameNotificated(Action<User, bool> whatToExecute, User name, bool answer)                          //מעטפת
-        {
-            var letssee = hubConnection.LastError;
-            //View Model methods should run on the main thread
-
-            Application.Current.Dispatcher.Invoke(
-                   () =>
-                   {
-                    
-                       // Code to run on the GUI thread.
-                       whatToExecute(name, answer);
-                       
-                   });
-           
-
-            
-        }
+            Task connectTask = Task.Run(() =>
+            {
+                // for now
+                hubConnection.Dispose();
+            });
+            connectTask.ConfigureAwait(false);//Does not return to and deadlocks the UI thread after execution
+            connectTask.Wait();
+        }                   // disconnect from the hub
+       
         #endregion
 
-        #region Game
-        public void ListenToGetPlayer(Action<Player> GetPlayers) //SIGN UP TO THIS EVENT (WHENEVER IT SHOOTS) 
-        {
-            Application.Current.Dispatcher.Invoke(
-                   () =>
-                   {
-                       // Code to run on the GUI thread.
-                       Task connectTask = Task.Run(() =>
-                       {
-                           userHubProxy.On("GetMyPlayer", (Player action) => GetPlayerNotificated(GetPlayers, action));
-                           hubConnection.Start().Wait();
-                       });
-                       connectTask.ConfigureAwait(false);  //Does not return to and deadlocks the UI thread after execution
-                       connectTask.Wait();
-                   });
-        }
-
-        public void GetPlayer(User fromClient)                  // SHOOT EVENT TO WHOEVER SIGNED UP TO IT
-        {
-            //Server methods should be called on non UI thread
-            Task registerTask = Task.Run(() =>
-            {
-                userHubProxy.Invoke("GetPlayers", fromClient).Wait(100);
-                return;
-            });
-            registerTask.ConfigureAwait(false);//Does not return to and deadlocks the UI thread after execution
-            registerTask.Wait();
-        }
-
-        public void GetPlayerNotificated(Action<Player> whatToExecute, Player player)                          //מעטפת
-        {
-            //View Model methods should run on the main thread
-            Application.Current.Dispatcher.Invoke(
-                   () =>
-                   {
-                       // Code to run on the GUI thread.
-                       whatToExecute(player);
-                   });
-        }
-
-
-        public void ListenToDiceRoll(Action<Board,bool> RollDices) //SIGN UP TO THIS EVENT (WHENEVER IT SHOOTS) 
-        {
-            Application.Current.Dispatcher.Invoke(
-                   () =>
-                   {
-                       // Code to run on the GUI thread.
-                       Task connectTask = Task.Run(() =>
-                         {
-                             userHubProxy.On("broadcastDicesToClientAndMe", (Board action, bool isMyTurn) => RollDicesNotificated(RollDices, action, isMyTurn));
-                             hubConnection.Start().Wait();
-                         });
-                       connectTask.ConfigureAwait(false);  //Does not return to and deadlocks the UI thread after execution
-                       connectTask.Wait();
-                   });
-        }
-
-        public void RollDice(string toClient)                   // SHOOT EVENT TO WHOEVER SIGNED UP TO IT
-        {
-            //Server methods should be called on non UI thread
-            Task registerTask = Task.Run(() =>
-            {
-                userHubProxy.Invoke("GetDicesNumbers", toClient).Wait(100);
-                return;
-            });
-            registerTask.ConfigureAwait(false);//Does not return to and deadlocks the UI thread after execution
-            registerTask.Wait();
-        }
-
-        public void RollDicesNotificated(Action<Board, bool> whatToExecute, Board board, bool isMyTurn)                          //מעטפת
-        {
-            //View Model methods should run on the main thread
-            Application.Current.Dispatcher.Invoke(
-                   () =>
-                   {
-                       // Code to run on the GUI thread.
-                       whatToExecute(board, isMyTurn);
-                   });
-        }
-
-
-
-        public void ListenToBoardUpdated(Action<Board> UpdatedBoard) //SIGN UP TO THIS EVENT (WHENEVER IT SHOOTS) 
-        {
-            Application.Current.Dispatcher.Invoke(
-                   () =>
-                   {
-                       // Code to run on the GUI thread.
-                       Task connectTask = Task.Run(() =>
-                       {
-                           userHubProxy.On("broadcastChosenSpikeToClientAndMe", (Board action) => BoardUpdatedNotificated(UpdatedBoard, action));
-                           hubConnection.Start().Wait();
-                       });
-                       connectTask.ConfigureAwait(false);  //Does not return to and deadlocks the UI thread after execution
-                       connectTask.Wait();
-                   });
-        }
-
-        public void GetOrRemovePick(string toClient,int spikeChosen,Player player)                   // SHOOT EVENT TO WHOEVER SIGNED UP TO IT
-        {
-            //Server methods should be called on non UI thread
-            Task registerTask = Task.Run(() =>
-            {
-                userHubProxy.Invoke("GetOrRemovePick", toClient, spikeChosen, player).Wait(100);
-                return;
-            });
-            registerTask.ConfigureAwait(false);//Does not return to and deadlocks the UI thread after execution
-            registerTask.Wait();
-        }
-
-        public void BoardUpdatedNotificated(Action<Board> whatToExecute, Board board)                          //מעטפת
-        {
-            //View Model methods should run on the main thread
-            Application.Current.Dispatcher.Invoke(
-                   () =>
-                   {
-                       // Code to run on the GUI thread.
-                       whatToExecute(board);
-                   });
-        }
-
-
-
-        public void ListenToBoardUpdatedAndTurn(Action<Board, bool,int,int,bool,bool> UpdatedBoard) //SIGN UP TO THIS EVENT (WHENEVER IT SHOOTS) 
-        {
-            Application.Current.Dispatcher.Invoke(
-                   () =>
-                   {
-                       // Code to run on the GUI thread.
-                       Task connectTask2 = Task.Run(() =>
-                       {
-                           userHubProxy.On("broadcastMovedChipToClientAndMe", (Board action, bool IsMyTurn, int NumberTurn,int TotalTurns, bool IsTurnCanceled, bool didPlayerMove) => BoardUpdatedAndChangeTurnNotificated(UpdatedBoard, action, IsMyTurn,NumberTurn,TotalTurns, IsTurnCanceled, didPlayerMove));
-                           hubConnection.Start().Wait();
-                       });
-                       connectTask2.ConfigureAwait(false);  //Does not return to and deadlocks the UI thread after execution
-                       connectTask2.Wait();
-                   });
-        }
-
-        public void MoveChipToSpike(string toClient, int spikeChosen, Player player)                   // SHOOT EVENT TO WHOEVER SIGNED UP TO IT
-        {
-            //Server methods should be called on non UI thread
-            Task registerTask = Task.Run(() =>
-            {
-                userHubProxy.Invoke("MoveChipToSpike", toClient, spikeChosen, player).Wait(100);
-                return;
-            });
-            registerTask.ConfigureAwait(false);//Does not return to and deadlocks the UI thread after execution
-            registerTask.Wait();
-        }
-
-        public void BoardUpdatedAndChangeTurnNotificated(Action<Board, bool,int,int,bool,bool> whatToExecute, Board board, bool isMyTurn, int NumberTurn, int TotalTurns, bool IsTurnCanceled, bool didPlayerMove)         //מעטפת
-        {
-            //View Model methods should run on the main thread
-            Application.Current.Dispatcher.Invoke(
-                   () =>
-                   {
-                       // Code to run on the GUI thread.
-                       whatToExecute(board, isMyTurn,NumberTurn,TotalTurns, IsTurnCanceled, didPlayerMove);
-                   });
-        }
 
 
 
@@ -477,6 +317,5 @@ namespace WPFClient.Services
 
 
 
-        #endregion
     }
 }

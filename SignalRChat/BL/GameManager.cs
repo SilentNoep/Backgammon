@@ -1,12 +1,13 @@
-﻿using System;
+﻿using Common;
+using Common.Backgammon;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Web;
 
-namespace Common.Backgammon
+namespace SignalRChat.BL
 {
-    public class BackgammonManager
+    public class GameManager
     {
         #region Properties
         public Board bgBoard { get; set; }
@@ -20,7 +21,7 @@ namespace Common.Backgammon
         public bool DidPlayerMove { get; set; }
         #endregion
 
-        public BackgammonManager()
+        public GameManager()
         {
             Moves = 2;
             FirstIndex = -10;
@@ -63,12 +64,12 @@ namespace Common.Backgammon
             }
             else
             {
-                if(!CheckIfAllSoldierAreInBase())
+                if (!CheckIfAllSoldierAreInBase())
                 {
                     if (!CanAnySoldierMoveAtAll())
                         SwitchTurn(CurrentTurnPlayer);
                 }
-             
+
             }
 
 
@@ -80,11 +81,11 @@ namespace Common.Backgammon
             bgBoard.NewGame();
         }
 
-        public Player InitPlayer(User user)
+        public Player InitPlayer(UserDetails user)
         {
             if (user.HasInvitedGame)
             {
-                FirstPlayer.User = user;
+                FirstPlayer.UserName = user.UserName;
                 FirstPlayer.Color = Color.White;
                 FirstPlayer.IsMyTurn = true;
                 FirstPlayer.IsBaseOnLeft = false;
@@ -94,7 +95,7 @@ namespace Common.Backgammon
             }
             else
             {
-                SecondPlayer.User = user;
+                SecondPlayer.UserName = user.UserName;
                 SecondPlayer.Color = Color.Red;
                 SecondPlayer.IsMyTurn = false;
                 SecondPlayer.IsBaseOnLeft = true;
@@ -104,7 +105,7 @@ namespace Common.Backgammon
 
         private void SwitchTurn(Player playerToSwitchFrom)
         {
-            if (playerToSwitchFrom.User.UserName == FirstPlayer.User.UserName)
+            if (playerToSwitchFrom.UserName == FirstPlayer.UserName)
                 CurrentTurnPlayer = SecondPlayer;
             else
                 CurrentTurnPlayer = FirstPlayer;
@@ -116,7 +117,7 @@ namespace Common.Backgammon
 
         public bool IsMyTurn(string username)
         {
-            if (CurrentTurnPlayer.User.UserName == username)
+            if (CurrentTurnPlayer.UserName == username)
                 return true;
             else
                 return false;
@@ -126,7 +127,7 @@ namespace Common.Backgammon
         {
 
             CleanSelectedSpike();
-            if (CurrentTurnPlayer.User.UserName == player.User.UserName)
+            if (CurrentTurnPlayer.UserName == player.UserName)
             {
                 if (player.Color == bgBoard.EatenRedCell.ColorOfCell && bgBoard.EatenRedCell.NumOfSoldiers > 0 && chosenChipInSpikeIndex != bgBoard.EatenRedCell.ID)
                 {
@@ -225,7 +226,7 @@ namespace Common.Backgammon
                                         MoveToSpike(chosenSpikeToPutChipIndex, player, numberOfCubePicked);
                                         DidPlayerMove = true;
                                     }
-                                        
+
                                     else
                                     {
                                         bgBoard.Cells[FirstIndex].IsPicked = false;
@@ -747,11 +748,11 @@ namespace Common.Backgammon
         private void CountSoldiers()
         {
             int counter = 0;
-            if(CurrentTurnPlayer.Color == Color.Red)
+            if (CurrentTurnPlayer.Color == Color.Red)
             {
                 foreach (Cell cell in bgBoard.Cells)
                 {
-                    if(cell.ColorOfCell == Color.Red)
+                    if (cell.ColorOfCell == Color.Red)
                     {
                         counter += cell.NumOfSoldiers;
                     }

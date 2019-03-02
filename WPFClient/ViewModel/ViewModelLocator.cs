@@ -1,6 +1,7 @@
 using CommonServiceLocator;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Ioc;
+using GalaSoft.MvvmLight.Views;
 using System;
 using System.Windows.Navigation;
 using WPFClient.Infra;
@@ -23,16 +24,23 @@ namespace WPFClient.ViewModel
             SimpleIoc.Default.Register<LobbyViewModel>();
             SimpleIoc.Default.Register<GameViewModel>();
 
-
-
-
-
             //Services
             SimpleIoc.Default.Register<IChatService, ChatService>();
-            SimpleIoc.Default.Register<IDialogService, DialogService>();
-            SimpleIoc.Default.Register<IServerService, ServerService>();
-            var navService = new Services.NavigationService();
-            SimpleIoc.Default.Register<GalaSoft.MvvmLight.Views.INavigationService>(() => navService);
+            SimpleIoc.Default.Register<Infra.IDialogService, DialogService>();
+
+
+            // Window Navigation
+            var navWindowService = new Services.NavigationService();
+            SimpleIoc.Default.Register<INavigationService>(() => navWindowService);
+
+
+
+            var navFrameService = new FrameNavigationService();
+            navFrameService.Configure("SignInWindow", new Uri("../Views/SignInWindow.xaml", UriKind.Relative));
+            navFrameService.Configure("LobbyWindow", new Uri("../Views/LobbyWindow.xaml", UriKind.Relative));
+            navFrameService.Configure("RegisterWindow", new Uri("../Views/RegisterWindow.xaml", UriKind.Relative));
+            SimpleIoc.Default.Register<IFrameNavigationService>(() => navFrameService);
+
 
 
 

@@ -43,13 +43,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Backgammon\BackgammonManager.cs" />
     <Compile Include="Backgammon\Board.cs" />
     <Compile Include="Backgammon\Cell.cs" />
     <Compile Include="Backgammon\Dices.cs" />
     <Compile Include="Backgammon\Player.cs" />
-    <Compile Include="User.cs" />
+    <Compile Include="CommonUser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UserDetails.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

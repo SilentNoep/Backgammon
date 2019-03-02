@@ -2,6 +2,7 @@
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Messaging;
+using GalaSoft.MvvmLight.Views;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -9,29 +10,26 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using WPFClient.Infra;
-using WPFClient.Messages;
 
 namespace WPFClient.ViewModel
 {
-    public class LobbyViewModel : ViewModelBase, IPageViewModel
+    public class LobbyViewModel : ViewModelBase
     {
         #region Members
         private IChatService _chatService;
-        private IDialogService _messageService;
-        private IServerService _serverService;
-        private GalaSoft.MvvmLight.Views.INavigationService _navigationService;
+        private Infra.IDialogService _messageService;
+        private INavigationService _navigationService;
         private string _message;
         private ObservableCollection<string> _groupMessages;
         private ObservableCollection<string> _currentMessages;
-        private ObservableCollection<User> usersOnline;
+        private ObservableCollection<UserDetails> usersOnline;
         private Dictionary<string, ObservableCollection<string>> _allChats;
-        private User _myUser;
-        private User _selectedUser;
+        private UserDetails _myUser;
+        private UserDetails _selectedUser;
         #endregion
 
 
         #region Properties / Commands
-        public string Name { get; set; } = "Lobby";
         public string Message
         {
             get { return _message; }
@@ -59,7 +57,7 @@ namespace WPFClient.ViewModel
                 RaisePropertyChanged();
             }
         }
-        public ObservableCollection<User> AllUsers
+        public ObservableCollection<UserDetails> AllUsers
         {
             get { return usersOnline; }
             set
@@ -77,7 +75,7 @@ namespace WPFClient.ViewModel
                 RaisePropertyChanged();
             }
         }
-        public User SelectedUser
+        public UserDetails SelectedUser
         {
             get { return _selectedUser; }
             set
@@ -86,59 +84,51 @@ namespace WPFClient.ViewModel
                 PlayGameCommand.RaiseCanExecuteChanged();
             }
         }
-        public User MyUser
+        public UserDetails MyUser
         {
             get { return _myUser; }
             set { _myUser = value; RaisePropertyChanged(); }
         }
 
 
-
-
+        public RelayCommand GetMyUser { get; set; }
+        public RelayCommand GetUsersList { get; set; }
         public RelayCommand PlayGameCommand { get; set; }
         public RelayCommand SendMessageCommand { get; set; }
         public RelayCommand PressGroupChatRoomCommand { get; set; }
-        public RelayCommand<User> SelectUserCommand { get; set; }
+        public RelayCommand<UserDetails> SelectUserCommand { get; set; }
         #endregion
 
-        public LobbyViewModel(IChatService chatService, IDialogService messageService, IServerService serverService, GalaSoft.MvvmLight.Views.INavigationService navigationService)
+        public LobbyViewModel(IChatService chatService, Infra.IDialogService messageService, INavigationService navigationService)
         {
             GroupMessages = new ObservableCollection<string>();
             AllChats = new Dictionary<string, ObservableCollection<string>>();
+            AllChats.Add("Lobby", GroupMessages);
             CurrentMessages = new ObservableCollection<string>();
             CurrentMessages = GroupMessages;
             _chatService = chatService;
             _messageService = messageService;
-            _serverService = serverService;
             _navigationService = navigationService;
             InitCommands();
-            MyUser = _chatService.User;
-            var allusers = _serverService.GetAllUsers("");
-            var userwithoutme = allusers.Where(p => p.UserName != MyUser.UserName);
-            AllUsers = new ObservableCollection<User>(userwithoutme);
-            AllChats.Add("Lobby", GroupMessages);
             Message = "";
-            if (_chatService.IsConnected || _chatService.HasEvents)
-            {
-                _chatService.ListenToStatusChangedEvents(OnUserLoggedIn, OnUserLoggedOff,OnUserInGame, MyUser);
-                _chatService.ListenToGroupMessages(SendMessageToAllAction);
-                _chatService.ListenToClientMessages(SendMessageToClient);
-                _chatService.ListenToGameInvitations(SendGameInvitation);
-                _chatService.SignIn(MyUser);
-                _chatService.ListenAnswerToGameInvitations(AnswerOfGameInvitation);
-            }
-            if (!_chatService.IsConnected)
-            {
-                _chatService.ConnectToHub();
-            }
+            RegisterToEvents();
         }
 
         #region Methods
         private void InitCommands()
         {
+            GetMyUser = new RelayCommand(() =>
+            {
+                _chatService.GetUserDetails(); 
+            });
+            GetUsersList = new RelayCommand(async() =>
+            {
+                var list = await _chatService.GetAllUsers();
+                AllUsers = new ObservableCollection<UserDetails>(list.Where(u => u.UserName != MyUser.UserName));
+            });
             SendMessageCommand = new RelayCommand(() =>
             {
-                if(Message != "")
+                if (Message != "")
                 {
                     if (SelectedUser == null)
                         _chatService.SendMessageToAll(Message);
@@ -147,14 +137,14 @@ namespace WPFClient.ViewModel
                     Message = "";
                 }
             });
-            SelectUserCommand = new RelayCommand<User>((p) =>
+            SelectUserCommand = new RelayCommand<UserDetails>((p) =>
             {
                 if (p != null)
                 {
                     if (p.Status == Status.Online)
                     {
                         SelectedUser = p;
-                        _chatService.GetSelectedUser(SelectedUser);
+                        //_chatService.GetSelectedUser(SelectedUser);
                         if (AllChats.ContainsKey(p.UserName))
                             CurrentMessages = AllChats[p.UserName];
                         else
@@ -164,7 +154,7 @@ namespace WPFClient.ViewModel
                         }
                         Message = "";
                     }
-                    else if(p.Status == Status.InGame)
+                    else if (p.Status == Status.InGame)
                     {
                         _messageService.ShowError("User Is In Middle of a Game Please TRY AGAIN WHEN HE's Finished", "User In Game");
                         SelectedUser = null;
@@ -174,26 +164,37 @@ namespace WPFClient.ViewModel
                         _messageService.ShowError("User Is OFFLINE TRY AGAIN WHEN HE IS ONLINE", "Offline User");
                         SelectedUser = null;
                     }
-                       
-
                 }
             });
             PressGroupChatRoomCommand = new RelayCommand(() =>
             {
                 SelectedUser = null;
-                _chatService.GetSelectedUser(null);
                 CurrentMessages = GroupMessages;
             });
 
             PlayGameCommand = new RelayCommand(async () =>
             {
-                _chatService.User.HasInvitedGame = true;
+                MyUser.HasInvitedGame = true;
                 string w00t = await _chatService.InviteClientForGame(MyUser, SelectedUser);
             }, () => SelectedUser == null ? false : true);
         }
 
+        private void RegisterToEvents()
+        {
+            _chatService.ListenToStatusChangedEvents(OnUserLoggedIn, OnUserLoggedOff, OnUserInGame,OnUserRegistered, MyUser);
+            _chatService.ListenToGroupMessages(SendMessageToAllAction);
+            _chatService.ListenToClientMessages(SendMessageToClient);
+            _chatService.ListenToGameInvitations(SendGameInvitation);
+            _chatService.ListenAnswerToGameInvitations(AnswerOfGameInvitation);
+            _chatService.ListenGetUserDetails(GetUser);
+        }
+        private void GetUser(UserDetails MyUserFromServer)
+        {
+            MyUser = MyUserFromServer;
+        }
 
-        private void SendGameInvitation(User userNameInvite)
+
+        private void SendGameInvitation(UserDetails userNameInvite)
         {
             if (_messageService.ShowQuestion($"{userNameInvite.UserName} Invited you to a game. do you accept?", "Invitation to game"))
             {
@@ -205,12 +206,11 @@ namespace WPFClient.ViewModel
         }
 
 
-        private void AnswerOfGameInvitation(User userNamethatInvited, bool Answer)
+        private void AnswerOfGameInvitation(UserDetails userNamethatInvited, bool Answer)
         {
             if (Answer)
             {
-                //_serverService.ConnectToServerInGame("", MyUser);
-                //_chatService.InGame(MyUser);
+                _chatService.InGame();
                 _chatService.DisconnectFromServer();
                 _navigationService.NavigateTo("", SelectedUser);
             }
@@ -232,23 +232,37 @@ namespace WPFClient.ViewModel
             GroupMessages.Add($"{DateTime.Now.ToString("HH:mm")} : {name} : {msg}");
         }
 
-        public void OnUserInGame(User userName)
+
+
+
+
+        public void OnUserInGame(UserDetails userName)
         {
-            var allusers = _serverService.GetAllUsers("");
-            var userwithoutme = allusers.Where(p => p.UserName != MyUser.UserName);
-            AllUsers = new ObservableCollection<User>(userwithoutme);
+            var user = AllUsers.First((u) => u.UserName == userName.UserName);
+            user.Status = userName.Status;
+            AllUsers = new ObservableCollection<UserDetails>(AllUsers.OrderByDescending(u => u.Status).ThenBy(u => u.UserName));
         }
-        public void OnUserLoggedIn(User userName)
+
+        public void OnUserRegistered(UserDetails userName)
         {
-            var allusers = _serverService.GetAllUsers("");
-            var userwithoutme = allusers.Where(p => p.UserName != MyUser.UserName);
-            AllUsers = new ObservableCollection<User>(userwithoutme);
+            AllUsers.Add(userName);
+            AllUsers = new ObservableCollection<UserDetails>(AllUsers.OrderByDescending(u => u.Status).ThenBy(u => u.UserName));
         }
-        public void OnUserLoggedOff(User userName)
+
+        public void OnUserLoggedIn(UserDetails userName)
         {
-            var allusers = _serverService.GetAllUsers("");
-            var userwithoutme = allusers.Where(p => p.UserName != MyUser.UserName);
-            AllUsers = new ObservableCollection<User>(userwithoutme);
+            var user = AllUsers.First((u) => u.UserName == userName.UserName);
+            user.Status = userName.Status;
+            AllUsers = new ObservableCollection<UserDetails>(AllUsers.OrderByDescending(u => u.Status).ThenBy(u => u.UserName));
+        }
+
+        public void OnUserLoggedOff(UserDetails userName)
+        {
+            var user = AllUsers.First((u) => u.UserName == userName.UserName);
+            user.Status = userName.Status;
+            if (userName.Wins != 0)
+                user.Wins = userName.Wins;
+            AllUsers = new ObservableCollection<UserDetails>(AllUsers.OrderByDescending(u => u.Status).ThenBy(u => u.UserName));
         }
 
         #endregion

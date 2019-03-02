@@ -2,32 +2,31 @@
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Messaging;
+using GalaSoft.MvvmLight.Views;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using WPFClient.Infra;
-using WPFClient.Messages;
+
 
 namespace WPFClient.ViewModel
 {
 
 
-    public class SignInViewModel : ViewModelBase, IPageViewModel
+    public class SignInViewModel : ViewModelBase
     {
 
         #region Members
         IChatService _chatService;
-        IDialogService _messageService;
-        IServerService _serverService;
-        private GalaSoft.MvvmLight.Views.INavigationService _navigationService;
+        Infra.IDialogService _messageService;
+        private IFrameNavigationService _navigationService;
         private string _userName;
         private string _password;
         #endregion
 
         #region Properties
 
-        public string Name { get; set; } = "Sign In";
         public string UserName
         {
             get
@@ -52,7 +51,7 @@ namespace WPFClient.ViewModel
                 RaisePropertyChanged();
             }
         }
-        public User User { get; set; }
+
 
 
         #endregion
@@ -62,10 +61,9 @@ namespace WPFClient.ViewModel
         public RelayCommand GoToRegisterView { get; set; }
         #endregion
 
-        public SignInViewModel(IChatService chatService, IDialogService messageService, IServerService serverService, GalaSoft.MvvmLight.Views.INavigationService navigationService)
+        public SignInViewModel(IChatService chatService, Infra.IDialogService messageService, IFrameNavigationService navigationService)
         {
             _messageService = messageService;
-            _serverService = serverService;
             _chatService = chatService;
             _navigationService = navigationService;
             InitCommands();
@@ -74,7 +72,7 @@ namespace WPFClient.ViewModel
         #region Methods
         public void InitCommands()
         {
-            SignInUserCommand = new RelayCommand(() =>
+            SignInUserCommand = new RelayCommand(async() =>
             {
                 if (UserName == "" || UserName == null || Password == "" || Password == null)
                 {
@@ -86,31 +84,27 @@ namespace WPFClient.ViewModel
                     _messageService.ShowError("Username & Password Must Have Atleast 4 Characters", "Invalid Input");
                     return;
                 }
-                User = new User() { UserName = this.UserName, Password = this.Password };
+                CommonUser newUser = new CommonUser() { UserName = this.UserName, Password = this.Password };
                 UserName = "";
                 Password = "";
 
-                string message = _serverService.ConnectToServerSignIn("checkUserValidation", User);
-                if (message == "")
-                {
-                    _messageService.ShowMessage("You Successfully Logged In!", "GREAT!");
-                    _chatService.GetUser(User);
-                    Messenger.Default.Send(new PageService()
-                    {
-                        currentPage = new LobbyViewModel(_chatService, _messageService, _serverService, _navigationService)
-                    });
-                }
-                else if(message == "Wrong")
-                    _messageService.ShowError("UserName Or Password Does not Match!", "Please Try Again!");
+                var ErrorMessage = await _chatService.SignIn(newUser);
+                if (ErrorMessage != "")
+                    _messageService.ShowError(ErrorMessage, "Sign In");
                 else
-                    _messageService.ShowError($"{message}","Please Try Again");
+                {
+                    //_messageService.ShowMessage("You Successfully Logged In!", "GREAT!");
+                    _navigationService.NavigateTo("LobbyWindow");
+                }
+
             });
+
+
             GoToRegisterView = new RelayCommand(() =>
             {
-                Messenger.Default.Send(new PageService()
-                {
-                    currentPage = new RegisterViewModel(_chatService, _messageService, _serverService, _navigationService)
-                });
+                UserName = "";
+                Password = "";
+                _navigationService.NavigateTo("RegisterWindow");
             });
         }
         #endregion

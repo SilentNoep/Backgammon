@@ -17,7 +17,7 @@ namespace WPFClient.Views
     /// <summary>
     /// Interaction logic for RegisterWindow.xaml
     /// </summary>
-    public partial class RegisterWindow : UserControl
+    public partial class RegisterWindow : Page
     {
         public RegisterWindow()
         {

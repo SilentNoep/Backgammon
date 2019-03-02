@@ -1,13 +1,14 @@
-﻿using System;
+﻿using Common;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Common
+namespace SignalRChat.DAL.Models
 {
-    public enum Status { Online, InGame, Offline }
+  
     public class User
     {
         [Key]
@@ -26,6 +27,7 @@ namespace Common
         [DataType(DataType.Date)]
         public DateTime? LastOnline { get; set; }
         public bool HasInvitedGame { get; set; }
+
 
 
 

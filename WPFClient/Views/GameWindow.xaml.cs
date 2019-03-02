@@ -21,7 +21,7 @@ namespace WPFClient.Views
     /// </summary>
     public partial class GameWindow : Window
     {
-        public GameWindow(User selectedUser)
+        public GameWindow(UserDetails selectedUser)
         {
             InitializeComponent();
             var inst = (GameViewModel)this.DataContext;

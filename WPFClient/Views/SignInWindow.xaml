@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="WPFClient.Views.SignInWindow"
+﻿<Page x:Class="WPFClient.Views.SignInWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -7,9 +7,9 @@
         xmlns:i="clr-namespace:WPFClient.ViewModel"
              xmlns:pswrd="clr-namespace:WPFClient.Behaviors"
         mc:Ignorable="d"
-       Height="550" Width="1000" 
+ 
         DataContext="{Binding Source={StaticResource Locator}, Path=SignInVM}">
-
+    <Viewbox Stretch="Fill"> 
     <Grid>
         <Grid.Background>
             <ImageBrush ImageSource="/Assets/backgammon.jpg"></ImageBrush>
@@ -32,4 +32,5 @@
 
 
     </Grid>
-</UserControl>
+    </Viewbox>
+</Page>

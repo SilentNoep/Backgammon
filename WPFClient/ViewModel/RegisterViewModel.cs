@@ -2,6 +2,7 @@
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Messaging;
+using GalaSoft.MvvmLight.Views;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,17 +10,16 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using WPFClient.Infra;
-using WPFClient.Messages;
+
 
 namespace WPFClient.ViewModel
 {
-    public class RegisterViewModel : ViewModelBase, IPageViewModel
+    public class RegisterViewModel : ViewModelBase
     {
         #region Fields
         IChatService _chatService;
-        IServerService _serverService;
-        IDialogService _messageService;
-        private GalaSoft.MvvmLight.Views.INavigationService _navigationService;
+        Infra.IDialogService _messageService;
+        private IFrameNavigationService _navigationService;
         private string _firstName;
         private string _lastName;
         private string _userName;
@@ -30,7 +30,6 @@ namespace WPFClient.ViewModel
         #endregion
 
         #region Propeties
-        public string Name { get; set; } = "Register";
         public string FirstName
         {
             get { return _firstName; }
@@ -92,7 +91,7 @@ namespace WPFClient.ViewModel
             }
         }
 
-        public User User { get; set; }
+
         #endregion
 
         #region Commands
@@ -100,7 +99,7 @@ namespace WPFClient.ViewModel
         public RelayCommand GoToSignInView { get; set; }
         #endregion
 
-        public RegisterViewModel(IChatService chatService, IDialogService messageService, IServerService serverService, GalaSoft.MvvmLight.Views.INavigationService navigationService)
+        public RegisterViewModel(IChatService chatService, Infra.IDialogService messageService, IFrameNavigationService navigationService)
         {
             FirstName = "";
             LastName = "";
@@ -108,7 +107,6 @@ namespace WPFClient.ViewModel
             Password = "";
             ConfirmPassword = "";
             _birthdate = DateTime.Now;
-            _serverService = serverService;
             _chatService = chatService;
             _messageService = messageService;
             _navigationService = navigationService;
@@ -118,11 +116,11 @@ namespace WPFClient.ViewModel
         #region Methods
         private void InitCommands()
         {
-            RegisterCommand = new RelayCommand(() =>
+            RegisterCommand = new RelayCommand(async () =>
             {
                 if (UserName == "" || Password == "" || FirstName == "" || LastName == "" || ConfirmPassword == "" || Birthdate == null)
                 {
-                    _messageService.ShowError("ALL Fields are required!!","Invalid Input!");
+                    _messageService.ShowError("ALL Fields are required!!", "Invalid Input!");
                     return;
                 }
                 if (Password.Length < 4 || UserName.Length < 4)
@@ -140,7 +138,7 @@ namespace WPFClient.ViewModel
                     _messageService.ShowError("Make Sure to CONFIRM the RIGHT Password!", "Invalid Input!");
                     return;
                 }
-                User = new User()
+                CommonUser newUser = new CommonUser()
                 {
                     UserName = this.UserName,
                     Password = this.Password,
@@ -148,31 +146,26 @@ namespace WPFClient.ViewModel
                     LastName = this.LastName,
                     Birthdate = this.Birthdate
                 };
-
-                if (_serverService.ConnectToServerRegister("register", User))
+                var errorMessage = await _chatService.Register(newUser);
+                if (errorMessage != "")
+                    _messageService.ShowError(errorMessage, "Register");
+                else
                 {
-                    _chatService.GetUser(User);
                     this.UserName = "";
                     this.Password = "";
                     this.FirstName = "";
                     this.LastName = "";
-                    _messageService.ShowMessage("You Successfully Registered!!", "GREAT!!");
-                    Messenger.Default.Send(new PageService()
-                    {
-                        currentPage = new LobbyViewModel(_chatService, _messageService, _serverService, _navigationService)
-                    });
+                    _navigationService.NavigateTo("LobbyWindow");
                 }
-                else
-                    _messageService.ShowError("Can't Connect To Server.", "Please Try Again");
-
             });
 
             GoToSignInView = new RelayCommand(() =>
             {
-                Messenger.Default.Send(new PageService()
-                {
-                    currentPage = new SignInViewModel(_chatService, _messageService, _serverService, _navigationService)
-                });
+                this.UserName = "";
+                this.Password = "";
+                this.FirstName = "";
+                this.LastName = "";
+                _navigationService.NavigateTo("SignInWindow");
             });
         }
         #endregion
