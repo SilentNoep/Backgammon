@@ -48,8 +48,8 @@ namespace Hubs.SignalRChat
             string fromClient = userConnections[Context.ConnectionId];
             if (userNames.ContainsKey(toClient))
             {
-                Clients.Client(userNames[toClient]).broadcastMessageToClient(fromClient, message);
-                Clients.Caller.broadcastMessageToClient(toClient, message);
+                Clients.Client(userNames[toClient]).broadcastMessageToClient(fromClient, message,fromClient);
+                Clients.Caller.broadcastMessageToClient(toClient, message,fromClient);
             }
         }
         public void InGame()

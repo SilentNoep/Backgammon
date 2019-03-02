@@ -397,9 +397,9 @@ namespace WPFClient.ViewModel
             return false;
         }
 
-        private void SendMessageToClient(string name, string msg)
+        private void SendMessageToClient(string name, string msg, string sender)
         {
-            CurrentMessages.Add($"{DateTime.Now.ToString("HH:mm")} : {name} : {msg}");
+            CurrentMessages.Add($"{DateTime.Now.ToString("HH:mm")} : {sender} : {msg}");
         }
 
         private void GetDices(Board board, bool isMyTurn)

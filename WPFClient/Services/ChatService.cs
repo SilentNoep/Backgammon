@@ -28,7 +28,7 @@ namespace WPFClient.Services
                 Application.Current.Dispatcher.Invoke(() => SendMessageToAllAction.Invoke(userName, message));
             });
         }
-        public void ListenToClientMessages(Action<string, string> SendMessageToAllAction)   //SIGN UP TO THIS EVENT (WHENEVER IT SHOOTS)
+        public void ListenToClientMessages(Action<string, string,string> SendMessageToAllAction)   //SIGN UP TO THIS EVENT (WHENEVER IT SHOOTS)
         {
             Application.Current.Dispatcher.Invoke(
                  () =>
@@ -36,7 +36,7 @@ namespace WPFClient.Services
                      // Code to run on the GUI thread.
                      Task connectTask = Task.Run(() =>
                      {
-                         userHubProxy.On("broadcastMessageToClient", (string name, string message) => MessageNotificated(SendMessageToAllAction, name, message));
+                         userHubProxy.On("broadcastMessageToClient", (string name, string message, string sender) => MessageNotificated(SendMessageToAllAction, name, message, sender));
                          hubConnection.Start().Wait();
                      });
                      connectTask.ConfigureAwait(false);  //Does not return to and deadlocks the UI thread after execution
@@ -242,14 +242,14 @@ namespace WPFClient.Services
 
 
 
-        public void MessageNotificated(Action<string, string> whatToExecute, string name, string message)                          //מעטפת
+        public void MessageNotificated(Action<string, string,string> whatToExecute, string name, string message, string sender)                          //מעטפת
         {
             //View Model methods should run on the main thread
             Application.Current.Dispatcher.Invoke(
                    () =>
                    {
                        // Code to run on the GUI thread.
-                       whatToExecute(name, message);
+                       whatToExecute(name, message,sender);
                    });
         }
         public void InviteGameNotificated(Action<UserDetails> whatToExecute, UserDetails name)                          //מעטפת

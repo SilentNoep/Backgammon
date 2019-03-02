@@ -199,6 +199,9 @@ namespace WPFClient.ViewModel
             if (_messageService.ShowQuestion($"{userNameInvite.UserName} Invited you to a game. do you accept?", "Invitation to game"))
             {
                 SelectedUser = userNameInvite;
+                if (!AllChats.ContainsKey(SelectedUser.UserName))
+                    AllChats.Add(SelectedUser.UserName, new ObservableCollection<string>());
+                CurrentMessages = AllChats[SelectedUser.UserName];
                 _chatService.AnswerInviteClientForGame(MyUser, userNameInvite, true);
             }
             else                                        // decline invitation
@@ -210,7 +213,7 @@ namespace WPFClient.ViewModel
         {
             if (Answer)
             {
-                _chatService.InGame();
+                //_chatService.InGame();
                 _chatService.DisconnectFromServer();
                 _navigationService.NavigateTo("", SelectedUser);
             }
@@ -220,11 +223,11 @@ namespace WPFClient.ViewModel
 
         }
 
-        private void SendMessageToClient(string name, string msg)
+        private void SendMessageToClient(string name, string msg,string sender)
         {
             if (!AllChats.ContainsKey(name))
                 AllChats.Add(name, new ObservableCollection<string>());
-            AllChats[name].Add($"{DateTime.Now.ToString("HH:mm")} : {name} : {msg}");
+            AllChats[name].Add($"{DateTime.Now.ToString("HH:mm")} : {sender} : {msg}");
         }
 
         private void SendMessageToAllAction(string name, string msg)

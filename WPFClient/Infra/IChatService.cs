@@ -21,7 +21,7 @@ namespace WPFClient.Infra
         void SendMessageToAll(string msg);                                               // FIRE EVENT
 
 
-        void ListenToClientMessages(Action<string, string> SendMessageToAllAction);     //SIGN UP TO EVENT
+        void ListenToClientMessages(Action<string, string,string> SendMessageToAllAction);     //SIGN UP TO EVENT
         void SendMessageToClient(string msg, string toClient);                             // FIRE EVENT
 
 
