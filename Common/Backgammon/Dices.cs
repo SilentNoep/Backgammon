@@ -64,6 +64,7 @@ namespace Common.Backgammon
             IsCube2Used = false;
             AreCubesDouble = false;
             IsRolled = false;
+            counter = 0;
         }
 
     }

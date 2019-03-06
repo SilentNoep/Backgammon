@@ -47,38 +47,11 @@ namespace Common.Backgammon
             Cells[22] = new Cell() { ID = 22, ColorOfCell = Color.Empty };
             Cells[23] = new Cell() { ColorOfCell = Color.Red, NumOfSoldiers = 2, ID = 23 };
 
-            EatenWhiteCell = new Cell() { ID = -1, ColorOfCell = Color.White };
+            EatenWhiteCell = new Cell() { ID = -1, ColorOfCell = Color.White};
             EatenRedCell = new Cell() { ID = 24, ColorOfCell = Color.Red };
             Dices = new Dices();
             WhitePile = new Cell() { ID = 50, ColorOfCell = Color.White };
             RedPile = new Cell() { ID = -50, ColorOfCell = Color.Red};
-
-
-            //Cells[0] = new Cell() { ColorOfCell = Color.Red, NumOfSoldiers = 2, ID = 0 };
-            //Cells[1] = new Cell() { ColorOfCell = Color.Red, NumOfSoldiers = 2, ID = 1 };
-            //Cells[2] = new Cell() { ColorOfCell = Color.Red, NumOfSoldiers = 2, ID = 2 };
-            //Cells[3] = new Cell() { ColorOfCell = Color.Red, NumOfSoldiers = 2, ID = 3 };
-            //Cells[4] = new Cell() { ColorOfCell = Color.Red, NumOfSoldiers = 2, ID = 4 };
-            //Cells[5] = new Cell() { ColorOfCell = Color.Empty, ID = 5 };
-            //Cells[6] = new Cell() { ColorOfCell = Color.Empty, ID = 6 };
-            //Cells[7] = new Cell() { ColorOfCell = Color.Empty, ID = 7 };
-            //Cells[8] = new Cell() { ColorOfCell = Color.Empty, ID = 8 };
-            //Cells[9] = new Cell() { ColorOfCell = Color.Empty, ID = 9 };
-            //Cells[10] = new Cell() { ColorOfCell = Color.Empty, ID = 10 };
-            //Cells[11] = new Cell() { ColorOfCell = Color.Empty, ID = 11 };
-            //Cells[12] = new Cell() { ColorOfCell = Color.Empty, ID = 12 };
-            //Cells[13] = new Cell() { ColorOfCell = Color.Empty, ID = 13 };
-            //Cells[14] = new Cell() { ColorOfCell = Color.Empty, ID = 14 };
-            //Cells[15] = new Cell() { ColorOfCell = Color.Empty, ID = 15 };
-            //Cells[16] = new Cell() { ColorOfCell = Color.Empty, ID = 16 };
-            //Cells[17] = new Cell() { ColorOfCell = Color.Empty, ID = 17 };
-            //Cells[18] = new Cell() { ColorOfCell = Color.Empty, ID = 18 };
-            //Cells[19] = new Cell() { ColorOfCell = Color.White, NumOfSoldiers = 4, ID = 19 };
-            //Cells[20] = new Cell() { ColorOfCell = Color.White, NumOfSoldiers = 4, ID = 20 };
-            //Cells[21] = new Cell() { ColorOfCell = Color.White, NumOfSoldiers = 4, ID = 21 };
-            //Cells[22] = new Cell() { ColorOfCell = Color.White, NumOfSoldiers = 4, ID = 22 };
-            //Cells[23] = new Cell() { ColorOfCell = Color.White, NumOfSoldiers = 4, ID = 23 };
-
 
         }
     }
